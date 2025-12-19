@@ -1,0 +1,44 @@
+@{
+    ViewData["Title"] = "Espace Client";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1>@ViewData["Message"]</h1>
+            <p class="lead">Bonjour @User.Identity!.Name</p>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Mes commandes</h5>
+                    <p class="card-text">Consultez l'historique de vos commandes</p>
+                    <a asp-action="MyOrders" class="btn btn-primary">Voir mes commandes</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Mon profil</h5>
+                    <p class="card-text">Gérez vos informations personnelles</p>
+                    <a asp-action="Profile" class="btn btn-primary">Voir mon profil</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Mes avis</h5>
+                    <p class="card-text">Consultez et gérez vos avis</p>
+                    <a asp-action="Reviews" class="btn btn-primary">Voir mes avis</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

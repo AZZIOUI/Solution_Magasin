@@ -1,0 +1,15 @@
+@{
+    ViewData["Title"] = "Compte verrouillé";
+}
+
+<div class="text-center">
+    <h1 class="text-warning">@ViewData["Title"]</h1>
+    <h2>Votre compte a été verrouillé temporairement.</h2>
+    <p>
+        Trop de tentatives de connexion infructueuses ont été détectées.
+        Veuillez réessayer dans quelques minutes.
+    </p>
+    <p>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Retour à l'accueil</a>
+    </p>
+</div>

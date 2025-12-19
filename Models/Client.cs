@@ -38,9 +38,6 @@ public partial class Client
     [Unicode(false)]
     public string? TelClient { get; set; }
 
-    [Column("aspnet_user_id")]
-    public int? AspnetUserId { get; set; }
-
     [InverseProperty("IdClientNavigation")]
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
 

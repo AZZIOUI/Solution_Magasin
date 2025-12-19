@@ -2,48 +2,44 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Solution_Magasin.Constants;
 
-namespace Solution_Magasin.Controllers
+namespace Solution_Magasin.Controllers;
+
+/// <summary>
+/// Contrôleur pour l'espace client
+/// Accessible uniquement aux utilisateurs avec le rôle Client
+/// </summary>
+[Authorize(Policy = RoleConstants.ClientPolicy)]
+public class ClientController : Controller
 {
-    /// <summary>
-    /// Contrôleur pour l'espace Client
-    /// Accessible uniquement aux utilisateurs avec le rôle Client
-    /// </summary>
-    [Authorize(Policy = RoleConstants.ClientPolicy)]
-    public class ClientController : Controller
+    private readonly ILogger<ClientController> _logger;
+
+    public ClientController(ILogger<ClientController> logger)
     {
-        private readonly ILogger<ClientController> _logger;
+        _logger = logger;
+    }
 
-        public ClientController(ILogger<ClientController> logger)
-        {
-            _logger = logger;
-        }
+    /// <summary>
+    /// Page d'accueil de l'espace client
+    /// </summary>
+    public IActionResult Index()
+    {
+        _logger.LogInformation("Accès à l'espace client par {User}", User.Identity?.Name);
+        return View();
+    }
 
-        // GET: /Client/Index
-        public IActionResult Index()
-        {
-            ViewData["Message"] = "Bienvenue dans votre espace client";
-            return View();
-        }
+    /// <summary>
+    /// Page des commandes du client
+    /// </summary>
+    public IActionResult MyOrders()
+    {
+        return View();
+    }
 
-        // GET: /Client/MyOrders
-        public IActionResult MyOrders()
-        {
-            ViewData["Message"] = "Mes commandes";
-            return View();
-        }
-
-        // GET: /Client/Profile
-        public IActionResult Profile()
-        {
-            ViewData["Message"] = "Mon profil";
-            return View();
-        }
-
-        // GET: /Client/Reviews
-        public IActionResult Reviews()
-        {
-            ViewData["Message"] = "Mes avis";
-            return View();
-        }
+    /// <summary>
+    /// Page du profil du client
+    /// </summary>
+    public IActionResult Profile()
+    {
+        return View();
     }
 }

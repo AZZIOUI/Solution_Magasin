@@ -15,100 +15,91 @@ namespace Solution_Magasin
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
-            // Configure DbContext
+            // Configuration du contexte de base de données principal
             builder.Services.AddDbContext<DotnetProjectContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            // Configure Identity with int as primary key
-            builder.Services.AddIdentity<AspNetUser, AspNetRole>(options =>
+            // Configuration du contexte Identity
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+            // Configuration d'Identity
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
-                // Password settings
+                // Configuration du mot de passe
                 options.Password.RequireDigit = true;
                 options.Password.RequireLowercase = true;
                 options.Password.RequireUppercase = true;
                 options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequiredLength = 6;
 
-                // Lockout settings
+                // Configuration du compte
+                options.User.RequireUniqueEmail = true;
+                options.SignIn.RequireConfirmedEmail = false;
+                options.SignIn.RequireConfirmedAccount = false;
+
+                // Configuration du verrouillage
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
                 options.Lockout.MaxFailedAccessAttempts = 5;
                 options.Lockout.AllowedForNewUsers = true;
-
-                // User settings
-                options.User.RequireUniqueEmail = true;
-
-                // SignIn settings
-                options.SignIn.RequireConfirmedEmail = false;
-                options.SignIn.RequireConfirmedPhoneNumber = false;
             })
-            .AddEntityFrameworkStores<DotnetProjectContext>()
+            .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
-            // Configure Cookie settings
+            // Configuration des cookies
             builder.Services.ConfigureApplicationCookie(options =>
             {
-                options.Cookie.HttpOnly = true;
-                options.ExpireTimeSpan = TimeSpan.FromHours(24);
                 options.LoginPath = "/Account/Login";
+                options.LogoutPath = "/Account/Logout";
                 options.AccessDeniedPath = "/Account/AccessDenied";
+                options.ExpireTimeSpan = TimeSpan.FromHours(24);
                 options.SlidingExpiration = true;
+                options.Cookie.HttpOnly = true;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                options.Cookie.SameSite = SameSiteMode.Lax;
             });
 
-            // Configure Authorization Policies
+            // Configuration des politiques d'autorisation
             builder.Services.AddAuthorization(options =>
             {
-                // Politique pour l'espace Client
+                // Politique pour les clients uniquement
                 options.AddPolicy(RoleConstants.ClientPolicy, policy =>
                     policy.RequireRole(RoleConstants.Client));
 
-                // Politique pour l'espace Employé (tous les employés)
+                // Politique pour tous les employés
                 options.AddPolicy(RoleConstants.EmployePolicy, policy =>
                     policy.RequireRole(RoleConstants.GetEmployeeRoles()));
 
-                // Politique pour l'administrateur uniquement
+                // Politique pour les administrateurs uniquement
                 options.AddPolicy(RoleConstants.AdminPolicy, policy =>
                     policy.RequireRole(RoleConstants.Administrateur));
 
-                // Politique pour Responsable Achat
+                // Politique pour les responsables d'achat uniquement
                 options.AddPolicy(RoleConstants.ResponsableAchatPolicy, policy =>
-                    policy.RequireRole(RoleConstants.Administrateur, RoleConstants.ResponsableAchat));
+                    policy.RequireRole(RoleConstants.ResponsableAchat));
 
-                // Politique pour Magasinier
+                // Politique pour les magasiniers uniquement
                 options.AddPolicy(RoleConstants.MagasinierPolicy, policy =>
-                    policy.RequireRole(RoleConstants.Administrateur, RoleConstants.Magasinier));
+                    policy.RequireRole(RoleConstants.Magasinier));
             });
+
+            // Enregistrer le service de seeding
+            builder.Services.AddScoped<DatabaseSeeder>();
 
             var app = builder.Build();
 
-            // Seed roles and users
+            // Seed la base de données avec les rôles et l'admin par défaut
             using (var scope = app.Services.CreateScope())
             {
-                var services = scope.ServiceProvider;
-                try
-                {
-                    var roleManager = services.GetRequiredService<RoleManager<AspNetRole>>();
-                    var userManager = services.GetRequiredService<UserManager<AspNetUser>>();
-                    
-                    await DbInitializer.SeedRolesAsync(roleManager);
-                    await DbInitializer.SeedAdminAsync(userManager);
-                    
-                    // Créer des utilisateurs de test (uniquement en développement)
-                    if (app.Environment.IsDevelopment())
-                    {
-                        await DbInitializer.SeedTestUsersAsync(userManager);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    var logger = services.GetRequiredService<ILogger<Program>>();
-                    logger.LogError(ex, "Une erreur s'est produite lors de l'initialisation des rôles");
-                }
+                var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
+                await seeder.SeedAsync();
             }
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 

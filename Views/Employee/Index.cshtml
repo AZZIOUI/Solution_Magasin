@@ -1,101 +1,83 @@
-@using Microsoft.AspNetCore.Identity
-@using Solution_Magasin.Models
-@using Solution_Magasin.Constants
-@inject UserManager<AspNetUser> UserManager
-
 @{
     ViewData["Title"] = "Espace Employé";
-    var user = await UserManager.GetUserAsync(User);
-    var roles = user != null ? await UserManager.GetRolesAsync(user) : new List<string>();
-    var isAdmin = roles.Contains(RoleConstants.Administrateur);
-    var isResponsableAchat = roles.Contains(RoleConstants.ResponsableAchat);
-    var isMagasinier = roles.Contains(RoleConstants.Magasinier);
 }
 
 <div class="container mt-4">
     <div class="row">
         <div class="col-12">
-            <h1>@ViewData["Message"]</h1>
-            <p class="lead">Bonjour @user?.Prenom @user?.Nom</p>
-            <p>
-                <strong>Rôle(s) :</strong> 
-                @string.Join(", ", roles)
-            </p>
+            <h1 class="mb-4">@ViewData["Title"]</h1>
+            <div class="alert alert-info" role="alert">
+                <h4 class="alert-heading">Bienvenue dans votre espace employé !</h4>
+                <p>Vous êtes connecté en tant que <strong>@User.Identity?.Name</strong></p>
+                <p class="mb-0">
+                    Rôle(s) : 
+                    @if (User.IsInRole("Administrateur"))
+                    {
+                        <span class="badge bg-danger">Administrateur</span>
+                    }
+                    @if (User.IsInRole("ResponsableAchat"))
+                    {
+                        <span class="badge bg-warning">Responsable d'Achat</span>
+                    }
+                    @if (User.IsInRole("Magasinier"))
+                    {
+                        <span class="badge bg-primary">Magasinier</span>
+                    }
+                </p>
+            </div>
         </div>
     </div>
-    
+
     <div class="row mt-4">
-        <!-- Accessible à tous les employés -->
-        <div class="col-md-4 mb-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Ventes</h5>
-                    <p class="card-text">Gérer les ventes</p>
-                    <a asp-action="Sales" class="btn btn-primary">Accéder</a>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4 mb-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Présences</h5>
-                    <p class="card-text">Pointage des présences</p>
-                    <a asp-action="Presence" class="btn btn-primary">Accéder</a>
-                </div>
-            </div>
-        </div>
-        
-        @if (isAdmin || isResponsableAchat)
+        @if (User.IsInRole("Administrateur") || User.IsInRole("Magasinier"))
         {
-            <!-- Accessible aux Admins et Responsables Achat -->
             <div class="col-md-4 mb-3">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">Achats</h5>
-                        <p class="card-text">Gestion des achats fournisseurs</p>
-                        <a asp-action="Purchases" class="btn btn-warning">Accéder</a>
+                        <h5 class="card-title">Gestion des Stocks</h5>
+                        <p class="card-text">Gérez les stocks, les articles et les notifications.</p>
+                        <a asp-action="StockManagement" class="btn btn-primary">Accéder</a>
                     </div>
                 </div>
             </div>
         }
-        
-        @if (isAdmin || isMagasinier)
+
+        @if (User.IsInRole("Administrateur") || User.IsInRole("ResponsableAchat"))
         {
-            <!-- Accessible aux Admins et Magasiniers -->
             <div class="col-md-4 mb-3">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">Stock</h5>
-                        <p class="card-text">Gestion du stock</p>
-                        <a asp-action="Stock" class="btn btn-warning">Accéder</a>
+                        <h5 class="card-title">Gestion des Achats</h5>
+                        <p class="card-text">Gérez les achats auprès des fournisseurs.</p>
+                        <a asp-action="PurchaseManagement" class="btn btn-primary">Accéder</a>
                     </div>
                 </div>
             </div>
         }
-        
-        @if (isAdmin)
+
+        @if (User.IsInRole("Administrateur"))
         {
-            <!-- Accessible uniquement aux Admins -->
             <div class="col-md-4 mb-3">
                 <div class="card border-danger">
                     <div class="card-body">
-                        <h5 class="card-title">Utilisateurs</h5>
-                        <p class="card-text">Gestion des utilisateurs</p>
-                        <a asp-action="Users" class="btn btn-danger">Accéder</a>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-4 mb-3">
-                <div class="card border-danger">
-                    <div class="card-body">
-                        <h5 class="card-title">Rapports</h5>
-                        <p class="card-text">Rapports et statistiques</p>
-                        <a asp-action="Reports" class="btn btn-danger">Accéder</a>
+                        <h5 class="card-title text-danger">
+                            <i class="bi bi-shield-lock"></i> Administration
+                        </h5>
+                        <p class="card-text">Gestion des utilisateurs, employés et paramètres système.</p>
+                        <a asp-controller="Admin" asp-action="Index" class="btn btn-danger">Accéder</a>
                     </div>
                 </div>
             </div>
         }
+
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Tableau de bord</h5>
+                    <p class="card-text">Consultez les statistiques et rapports.</p>
+                    <a href="#" class="btn btn-primary">Voir le tableau de bord</a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

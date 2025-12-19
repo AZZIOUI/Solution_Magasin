@@ -31,9 +31,6 @@ public partial class Employe
     [Column("dateEmbauche")]
     public DateOnly? DateEmbauche { get; set; }
 
-    [Column("aspnet_user_id")]
-    public int? AspnetUserId { get; set; }
-
     [InverseProperty("IdUtilisateurNavigation")]
     public virtual ICollection<Presence> Presences { get; set; } = new List<Presence>();
 }

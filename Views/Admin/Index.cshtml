@@ -1,0 +1,67 @@
+@{
+    ViewData["Title"] = "Administration";
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4">@ViewData["Title"]</h1>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <div class="card border-primary">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-person-plus"></i> Créer un Employé
+                    </h5>
+                    <p class="card-text">Créez un nouveau compte employé avec un rôle spécifique.</p>
+                    <a asp-action="CreateEmployee" class="btn btn-primary">Créer un employé</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <div class="card border-info">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-people"></i> Gérer les Utilisateurs
+                    </h5>
+                    <p class="card-text">Consultez et gérez tous les utilisateurs du système.</p>
+                    <a asp-action="Users" class="btn btn-info">Voir les utilisateurs</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Statistiques Rapides</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <h3 class="text-primary">@ViewBag.TotalUsers</h3>
+                            <p>Utilisateurs totaux</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h3 class="text-success">@ViewBag.TotalClients</h3>
+                            <p>Clients</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h3 class="text-info">@ViewBag.TotalEmployees</h3>
+                            <p>Employés</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

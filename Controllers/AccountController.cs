@@ -116,12 +116,14 @@ public class AccountController : Controller
 
         if (ModelState.IsValid)
         {
-            // 1. Créer d'abord un enregistrement Client
+            // 1. Créer d'abord un enregistrement Client avec toutes les informations
             var client = new Client
             {
                 NomClient = model.LastName,
                 PrenomClient = model.FirstName,
-                MailClient = model.Email
+                MailClient = model.Email,
+                AdresseClient = model.Address,
+                TelClient = model.Phone
             };
 
             _dbContext.Clients.Add(client);
@@ -134,6 +136,7 @@ public class AccountController : Controller
                 Email = model.Email,
                 FirstName = model.FirstName,
                 LastName = model.LastName,
+                PhoneNumber = model.Phone,
                 UserType = "Client",
                 ClientId = client.IdClient,  // Lier à l'enregistrement Client
                 IsActive = true,

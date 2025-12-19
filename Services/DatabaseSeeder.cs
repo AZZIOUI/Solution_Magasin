@@ -11,15 +11,18 @@ public class DatabaseSeeder
 {
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly DotnetProjectContext _dbContext;
     private readonly ILogger<DatabaseSeeder> _logger;
 
     public DatabaseSeeder(
         RoleManager<IdentityRole> roleManager,
         UserManager<ApplicationUser> userManager,
+        DotnetProjectContext dbContext,
         ILogger<DatabaseSeeder> logger)
     {
         _roleManager = roleManager;
         _userManager = userManager;
+        _dbContext = dbContext;
         _logger = logger;
     }
 
@@ -79,6 +82,19 @@ public class DatabaseSeeder
 
         if (adminUser == null)
         {
+            // 1. Créer d'abord un enregistrement Employe
+            var employe = new Employe
+            {
+                NomEmp = "Système",
+                PrenomEmp = "Admin",
+                Cin = "ADMIN000",
+                DateEmbauche = DateOnly.FromDateTime(DateTime.Now)
+            };
+
+            _dbContext.Employes.Add(employe);
+            await _dbContext.SaveChangesAsync();
+
+            // 2. Créer l'utilisateur Identity et le lier à l'Employe
             adminUser = new ApplicationUser
             {
                 UserName = adminEmail,
@@ -87,6 +103,7 @@ public class DatabaseSeeder
                 FirstName = "Admin",
                 LastName = "Système",
                 UserType = "Employe",
+                EmployeId = employe.IdUtilisateur,  // Lier à l'enregistrement Employe
                 IsActive = true,
                 DateCreated = DateTime.UtcNow
             };
@@ -96,11 +113,16 @@ public class DatabaseSeeder
             if (result.Succeeded)
             {
                 await _userManager.AddToRoleAsync(adminUser, RoleConstants.Administrateur);
-                _logger.LogInformation("Administrateur par défaut créé: {Email}", adminEmail);
+                _logger.LogInformation("Administrateur par défaut créé: {Email}, EmployeId: {EmployeId}", 
+                    adminEmail, employe.IdUtilisateur);
                 _logger.LogWarning("IMPORTANT: Changez le mot de passe de l'administrateur par défaut!");
             }
             else
             {
+                // Si la création de l'utilisateur Identity échoue, supprimer l'Employe créé
+                _dbContext.Employes.Remove(employe);
+                await _dbContext.SaveChangesAsync();
+                
                 _logger.LogError("Erreur lors de la création de l'administrateur: {Errors}",
                     string.Join(", ", result.Errors.Select(e => e.Description)));
             }

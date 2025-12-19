@@ -35,8 +35,17 @@ public class AdminController : Controller
     /// <summary>
     /// Page d'accueil de l'administration
     /// </summary>
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
+        // Statistiques pour le dashboard
+        var totalUsers = _userManager.Users.Count();
+        var totalClients = _userManager.Users.Count(u => u.UserType == "Client");
+        var totalEmployees = _userManager.Users.Count(u => u.UserType == "Employe");
+
+        ViewBag.TotalUsers = totalUsers;
+        ViewBag.TotalClients = totalClients;
+        ViewBag.TotalEmployees = totalEmployees;
+
         return View();
     }
 

@@ -5,7 +5,7 @@
 
 <div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
+        <div class="col-md-10 col-lg-8">
             <div class="card shadow">
                 <div class="card-body p-5">
                     <h2 class="card-title text-center mb-4">@ViewData["Title"]</h2>
@@ -14,6 +14,7 @@
                     <form asp-action="Register" asp-controller="Account" method="post">
                         <div asp-validation-summary="All" class="text-danger mb-3"></div>
                         
+                        <h5 class="mb-3 text-primary">Informations personnelles</h5>
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label asp-for="FirstName" class="form-label"></label>
@@ -28,6 +29,7 @@
                             </div>
                         </div>
 
+                        <h5 class="mb-3 mt-4 text-primary">Coordonnées</h5>
                         <div class="mb-3">
                             <label asp-for="Email" class="form-label"></label>
                             <input asp-for="Email" class="form-control" placeholder="exemple@email.com" />
@@ -35,21 +37,37 @@
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="Password" class="form-label"></label>
-                            <input asp-for="Password" class="form-control" placeholder="••••••••" />
-                            <span asp-validation-for="Password" class="text-danger"></span>
-                            <small class="form-text text-muted">
-                                Le mot de passe doit contenir au moins 6 caractères, une majuscule, une minuscule et un chiffre.
-                            </small>
+                            <label asp-for="Phone" class="form-label"></label>
+                            <input asp-for="Phone" class="form-control" placeholder="+212 6XX XX XX XX" />
+                            <span asp-validation-for="Phone" class="text-danger"></span>
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="ConfirmPassword" class="form-label"></label>
-                            <input asp-for="ConfirmPassword" class="form-control" placeholder="••••••••" />
-                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                            <label asp-for="Address" class="form-label"></label>
+                            <textarea asp-for="Address" class="form-control" rows="2" placeholder="Votre adresse complète"></textarea>
+                            <span asp-validation-for="Address" class="text-danger"></span>
                         </div>
 
-                        <div class="d-grid gap-2">
+                        <h5 class="mb-3 mt-4 text-primary">Sécurité</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Password" class="form-label"></label>
+                                <input asp-for="Password" class="form-control" placeholder="••••••••" />
+                                <span asp-validation-for="Password" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ConfirmPassword" class="form-label"></label>
+                                <input asp-for="ConfirmPassword" class="form-control" placeholder="••••••••" />
+                                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <small class="form-text text-muted mb-3 d-block">
+                            <i class="bi bi-info-circle"></i> Le mot de passe doit contenir au moins 6 caractères, une majuscule, une minuscule et un chiffre.
+                        </small>
+
+                        <div class="d-grid gap-2 mt-4">
                             <button type="submit" class="btn btn-primary btn-lg">S'inscrire</button>
                         </div>
                     </form>

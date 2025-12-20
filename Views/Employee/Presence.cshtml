@@ -1,0 +1,255 @@
+@model IEnumerable<PresenceViewModel>
+@{
+    ViewData["Title"] = "Mes Présences";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="bi bi-clock-history"></i> Mes Présences</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Index">Espace Employé</a></li>
+                    <li class="breadcrumb-item active">Présences</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="col-md-4 text-end">
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Retour
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Filtre par Date -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" asp-action="Presence" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Date de Début</label>
+                    <input type="date" name="date" value="@ViewBag.SelectedDate" class="form-control" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Filtrer
+                    </button>
+                </div>
+                <div class="col-md-6 text-end">
+                    <label class="form-label">&nbsp;</label>
+                    <div>
+                        @{
+                            var presenceAujourdhui = Model.FirstOrDefault(p => p.Date == DateOnly.FromDateTime(DateTime.Now));
+                        }
+                        @if (presenceAujourdhui == null)
+                        {
+                            <form asp-action="CheckIn" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-clock-history"></i> Enregistrer Arrivée
+                                </button>
+                            </form>
+                        }
+                        else if (!presenceAujourdhui.IsCompleted)
+                        {
+                            <span class="badge bg-success me-2">Présent depuis @presenceAujourdhui.HeureArrive?.ToString("HH:mm")</span>
+                            <form asp-action="CheckOut" asp-route-idPr="@presenceAujourdhui.IdPr" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="bi bi-clock"></i> Enregistrer Départ
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">
+                                <i class="bi bi-check-circle"></i> Présence complète aujourd'hui
+                            </span>
+                        }
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Total Présences</h5>
+                    <h2 class="text-primary">@Model.Count()</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Complètes</h5>
+                    <h2 class="text-success">@Model.Count(p => p.IsCompleted)</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">En Cours</h5>
+                    <h2 class="text-warning">@Model.Count(p => p.IsPresent)</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Heures Totales</h5>
+                    @{
+                        double totalHours = 0;
+                        foreach (var p in Model.Where(p => p.IsCompleted))
+                        {
+                            var duree = p.HeureDepart!.Value.ToTimeSpan() - p.HeureArrive!.Value.ToTimeSpan();
+                            totalHours += duree.TotalHours;
+                        }
+                    }
+                    <h2 class="text-info">@totalHours.ToString("F1")h</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des Présences -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-table"></i> Historique des Présences</h5>
+        </div>
+        <div class="card-body">
+            @if (!Model.Any())
+            {
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> Aucune présence enregistrée pour cette période.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover" id="presenceTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Jour</th>
+                                <th>Heure d'Arrivée</th>
+                                <th>Heure de Départ</th>
+                                <th>Durée</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var presence in Model)
+                            {
+                                <tr class="@(presence.IsPresent ? "table-warning" : (presence.IsCompleted ? "" : "table-light"))">
+                                    <td><strong>@presence.Date.ToString("dd/MM/yyyy")</strong></td>
+                                    <td>@presence.Date.ToString("dddd", new System.Globalization.CultureInfo("fr-FR"))</td>
+                                    <td>
+                                        @if (presence.HeureArrive.HasValue)
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-clock"></i> @presence.HeureArrive.Value.ToString("HH:mm")
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (presence.HeureDepart.HasValue)
+                                        {
+                                            <span class="badge bg-primary">
+                                                <i class="bi bi-clock"></i> @presence.HeureDepart.Value.ToString("HH:mm")
+                                            </span>
+                                        }
+                                        else if (presence.IsPresent)
+                                        {
+                                            <span class="badge bg-warning text-dark">En cours</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (presence.IsCompleted)
+                                        {
+                                            <strong>@presence.Duree</strong>
+                                        }
+                                        else if (presence.IsPresent)
+                                        {
+                                            <em class="text-warning">En cours...</em>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (presence.IsCompleted)
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i> Complète
+                                            </span>
+                                        }
+                                        else if (presence.IsPresent)
+                                        {
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="bi bi-clock-history"></i> En Cours
+                                            </span>
+                                            <form asp-action="CheckOut" asp-route-idPr="@presence.IdPr" method="post" class="d-inline ms-2">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-warning" title="Enregistrer le départ">
+                                                    <i class="bi bi-door-open"></i> Sortir
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Incomplète</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#presenceTable').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/fr-FR.json'
+                },
+                pageLength: 25,
+                order: [[0, 'desc']]
+            });
+        });
+    </script>
+}

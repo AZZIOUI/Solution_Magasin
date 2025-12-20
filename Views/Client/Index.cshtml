@@ -1,47 +1,118 @@
 @{
     ViewData["Title"] = "Espace Client";
+    var userName = ViewBag.UserName as string;
+    var ordersCount = ViewBag.OrdersCount as int? ?? 0;
 }
 
-<div class="container mt-4">
+<div class="container py-4">
     <div class="row">
         <div class="col-12">
-            <h1 class="mb-4">@ViewData["Title"]</h1>
-            <div class="alert alert-success" role="alert">
-                <h4 class="alert-heading">Bienvenue dans votre espace client !</h4>
-                <p>Vous êtes connecté en tant que <strong>@User.Identity?.Name</strong></p>
+            <div class="card border-0 shadow-sm mb-4 bg-primary text-white">
+                <div class="card-body">
+                    <h2 class="mb-2">Bienvenue, @userName !</h2>
+                    <p class="mb-0">Gérez vos commandes et votre profil depuis votre espace personnel</p>
+                </div>
             </div>
         </div>
     </div>
 
+    <div class="row g-4">
+        <!-- Browse Products -->
+        <div class="col-md-6 col-lg-3">
+            <a asp-controller="Visitor" asp-action="Catalog" class="text-decoration-none">
+                <div class="card border-0 shadow-sm h-100 hover-card">
+                    <div class="card-body text-center">
+                        <i class="bi bi-grid-3x3-gap-fill text-primary" style="font-size: 3rem;"></i>
+                        <h5 class="mt-3">Parcourir</h5>
+                        <p class="text-muted mb-0">Découvrez nos produits</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Shopping Cart -->
+        <div class="col-md-6 col-lg-3">
+            <a asp-action="Cart" class="text-decoration-none">
+                <div class="card border-0 shadow-sm h-100 hover-card">
+                    <div class="card-body text-center">
+                        <i class="bi bi-cart-fill text-success" style="font-size: 3rem;"></i>
+                        <h5 class="mt-3">Mon Panier</h5>
+                        <p class="text-muted mb-0">Voir mon panier</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- My Orders -->
+        <div class="col-md-6 col-lg-3">
+            <a asp-action="MyOrders" class="text-decoration-none">
+                <div class="card border-0 shadow-sm h-100 hover-card">
+                    <div class="card-body text-center">
+                        <i class="bi bi-bag-check-fill text-info" style="font-size: 3rem;"></i>
+                        <h5 class="mt-3">Mes Commandes</h5>
+                        <p class="text-muted mb-0">@ordersCount commande(s)</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- My Profile -->
+        <div class="col-md-6 col-lg-3">
+            <a asp-action="Profile" class="text-decoration-none">
+                <div class="card border-0 shadow-sm h-100 hover-card">
+                    <div class="card-body text-center">
+                        <i class="bi bi-person-fill text-warning" style="font-size: 3rem;"></i>
+                        <h5 class="mt-3">Mon Profil</h5>
+                        <p class="text-muted mb-0">Gérer mes informations</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
     <div class="row mt-4">
-        <div class="col-md-4 mb-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Mes Commandes</h5>
-                    <p class="card-text">Consultez l'historique de vos commandes et suivez leur statut.</p>
-                    <a asp-action="MyOrders" class="btn btn-primary">Voir mes commandes</a>
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Accès rapide</h5>
                 </div>
-            </div>
-        </div>
-
-        <div class="col-md-4 mb-3">
-            <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Mon Profil</h5>
-                    <p class="card-text">Gérez vos informations personnelles et préférences.</p>
-                    <a asp-action="Profile" class="btn btn-primary">Voir mon profil</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4 mb-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Catalogue</h5>
-                    <p class="card-text">Parcourez notre catalogue de produits.</p>
-                    <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Voir le catalogue</a>
+                    <div class="row text-center">
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <div class="p-3">
+                                <i class="bi bi-lightning-fill text-warning" style="font-size: 2rem;"></i>
+                                <h6 class="mt-2">Livraison Rapide</h6>
+                                <p class="text-muted small mb-0">Sous 48h</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <div class="p-3">
+                                <i class="bi bi-shield-check text-success" style="font-size: 2rem;"></i>
+                                <h6 class="mt-2">Paiement Sécurisé</h6>
+                                <p class="text-muted small mb-0">100% sécurisé</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3">
+                                <i class="bi bi-headset text-primary" style="font-size: 2rem;"></i>
+                                <h6 class="mt-2">Support Client</h6>
+                                <p class="text-muted small mb-0">24/7 disponible</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .hover-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+</style>

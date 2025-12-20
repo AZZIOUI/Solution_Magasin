@@ -29,8 +29,30 @@
                                 <i class="bi bi-house"></i> Accueil
                             </a>
                         </li>
+                        
+                        <!-- Public Catalog -->
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Visitor" asp-action="Catalog">
+                                <i class="bi bi-grid-3x3-gap"></i> Catalogue
+                            </a>
+                        </li>
+                        
                         @if (User.Identity?.IsAuthenticated == true)
                         {
+                            @if (User.IsInRole("Client"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Client" asp-action="Cart">
+                                        <i class="bi bi-cart"></i> Panier
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Client" asp-action="MyOrders">
+                                        <i class="bi bi-bag-check"></i> Mes Commandes
+                                    </a>
+                                </li>
+                            }
+                            
                             @if (User.IsInRole("Administrateur"))
                             {
                                 <li class="nav-item dropdown">
@@ -74,20 +96,43 @@
                                     </ul>
                                 </li>
                             }
-                            @if (User.IsInRole("Client"))
+                            @if (User.IsInRole("ResponsableAchat") || User.IsInRole("Magasinier") || User.IsInRole("Administrateur"))
                             {
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Client" asp-action="Index">
-                                        <i class="bi bi-person-circle"></i> Espace Client
-                                    </a>
-                                </li>
-                            }
-                            @if (User.IsInRole("ResponsableAchat") || User.IsInRole("Magasinier"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Employee" asp-action="Index">
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-dark" href="#" id="employeeDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                         <i class="bi bi-briefcase"></i> Espace Employé
                                     </a>
+                                    <ul class="dropdown-menu" aria-labelledby="employeeDropdown">
+                                        <li><a class="dropdown-item" asp-controller="Employee" asp-action="Index">
+                                            <i class="bi bi-house-door"></i> Tableau de Bord
+                                        </a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        @if (User.IsInRole("Administrateur") || User.IsInRole("Magasinier") || User.IsInRole("ResponsableAchat"))
+                                        {
+                                            <li><h6 class="dropdown-header">Gestion des Stocks</h6></li>
+                                            <li><a class="dropdown-item" asp-controller="Employee" asp-action="StockManagement">
+                                                <i class="bi bi-boxes"></i> Gérer les Stocks
+                                            </a></li>
+                                            <li><a class="dropdown-item" asp-controller="Employee" asp-action="StockNotifications">
+                                                <i class="bi bi-bell"></i> Notifications
+                                            </a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                        }
+                                        @if (User.IsInRole("Administrateur") || User.IsInRole("ResponsableAchat"))
+                                        {
+                                            <li><h6 class="dropdown-header">Gestion des Achats</h6></li>
+                                            <li><a class="dropdown-item" asp-controller="Employee" asp-action="PurchaseManagement">
+                                                <i class="bi bi-cart-check"></i> Gérer les Achats
+                                            </a></li>
+                                            <li><a class="dropdown-item" asp-controller="Employee" asp-action="CreatePurchase">
+                                                <i class="bi bi-plus-circle"></i> Nouvel Achat
+                                            </a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                        }
+                                        <li><a class="dropdown-item" asp-controller="Employee" asp-action="Presence">
+                                            <i class="bi bi-clock-history"></i> Mes Présences
+                                        </a></li>
+                                    </ul>
                                 </li>
                             }
                         }

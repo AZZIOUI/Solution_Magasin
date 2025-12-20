@@ -1,0 +1,212 @@
+@model CreatePurchaseViewModel
+@{
+    ViewData["Title"] = "Créer un Achat";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="bi bi-plus-circle"></i> Créer un Nouvel Achat</h4>
+                </div>
+                <div class="card-body">
+                    <nav aria-label="breadcrumb" class="mb-3">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a asp-action="Index">Espace Employé</a></li>
+                            <li class="breadcrumb-item"><a asp-action="PurchaseManagement">Gestion des Achats</a></li>
+                            <li class="breadcrumb-item active">Nouvel Achat</li>
+                        </ol>
+                    </nav>
+
+                    <form asp-action="CreatePurchase" method="post" id="purchaseForm">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+
+                        <!-- Fournisseur et Date -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label asp-for="IdFournisseur" class="form-label fw-bold"></label>
+                                <select asp-for="IdFournisseur" class="form-select" required>
+                                    <option value="">-- Sélectionner un fournisseur --</option>
+                                    @foreach (var supplier in ViewBag.Suppliers as List<SelectListItem>)
+                                    {
+                                        <option value="@supplier.Value">@supplier.Text</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="IdFournisseur" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="DateAchat" class="form-label fw-bold"></label>
+                                <input asp-for="DateAchat" type="datetime-local" class="form-control" />
+                                <span asp-validation-for="DateAchat" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <!-- Articles -->
+                        <h5 class="mb-3"><i class="bi bi-box-seam"></i> Articles</h5>
+                        
+                        <div id="items-container">
+                            <!-- Item Template (will be cloned by JavaScript) -->
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary mb-4" id="add-item-btn">
+                            <i class="bi bi-plus-circle"></i> Ajouter un Article
+                        </button>
+
+                        <hr />
+
+                        <!-- Total -->
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h4 class="mb-0">Total:</h4>
+                                            <h3 class="mb-0 text-success" id="total-display">0.00 MAD</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Boutons -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="PurchaseManagement" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Annuler
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Enregistrer l'Achat
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Template for item row -->
+<template id="item-template">
+    <div class="card mb-3 item-card">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <label class="form-label">Article</label>
+                    <select name="Items[INDEX].IdArticle" class="form-select item-select" required>
+                        <option value="">-- Sélectionner --</option>
+                        @foreach (var article in ViewBag.Articles as List<SelectListItem>)
+                        {
+                            <option value="@article.Value">@article.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Quantité</label>
+                    <input type="number" name="Items[INDEX].Quantite" class="form-control item-qty" min="1" value="1" required />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Prix Unitaire (MAD)</label>
+                    <input type="number" name="Items[INDEX].PrixUnitaire" class="form-control item-price" min="0" step="0.01" value="0" required />
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label">Montant</label>
+                    <p class="form-control-plaintext fw-bold item-total">0.00</p>
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="button" class="btn btn-danger btn-sm w-100 remove-item-btn">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        let itemIndex = 0;
+
+        function calculateItemTotal(card) {
+            const qty = parseFloat(card.find('.item-qty').val()) || 0;
+            const price = parseFloat(card.find('.item-price').val()) || 0;
+            const total = qty * price;
+            card.find('.item-total').text(total.toFixed(2));
+            updateGrandTotal();
+        }
+
+        function updateGrandTotal() {
+            let grandTotal = 0;
+            $('.item-card').each(function() {
+                const qty = parseFloat($(this).find('.item-qty').val()) || 0;
+                const price = parseFloat($(this).find('.item-price').val()) || 0;
+                grandTotal += qty * price;
+            });
+            $('#total-display').text(grandTotal.toFixed(2) + ' MAD');
+        }
+
+        function addItem() {
+            const template = $('#item-template').html();
+            const newItem = template.replace(/INDEX/g, itemIndex);
+            $('#items-container').append(newItem);
+            itemIndex++;
+        }
+
+        $(document).ready(function() {
+            // Add first item
+            addItem();
+
+            // Add item button
+            $('#add-item-btn').on('click', function() {
+                addItem();
+            });
+
+            // Remove item
+            $(document).on('click', '.remove-item-btn', function() {
+                if ($('.item-card').length > 1) {
+                    $(this).closest('.item-card').remove();
+                    updateGrandTotal();
+                } else {
+                    alert('Vous devez avoir au moins un article dans l\'achat.');
+                }
+            });
+
+            // Calculate totals on input
+            $(document).on('input', '.item-qty, .item-price', function() {
+                const card = $(this).closest('.item-card');
+                calculateItemTotal(card);
+            });
+
+            // Form validation
+            $('#purchaseForm').on('submit', function(e) {
+                if ($('.item-card').length === 0) {
+                    e.preventDefault();
+                    alert('Veuillez ajouter au moins un article.');
+                    return false;
+                }
+
+                let valid = true;
+                $('.item-select').each(function() {
+                    if (!$(this).val()) {
+                        valid = false;
+                        $(this).addClass('is-invalid');
+                    } else {
+                        $(this).removeClass('is-invalid');
+                    }
+                });
+
+                if (!valid) {
+                    e.preventDefault();
+                    alert('Veuillez sélectionner un article pour chaque ligne.');
+                    return false;
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,184 @@
+@model Solution_Magasin.ViewModels.ProductCatalogViewModel
+@{
+    ViewData["Title"] = "Catalogue de Produits";
+}
+
+<div class="container py-4">
+    <div class="row">
+        <!-- Sidebar Filters -->
+        <div class="col-lg-3 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-filter"></i> Filtres</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Catalog" method="get">
+                        <!-- Search -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Rechercher</label>
+                            <input type="text" name="search" class="form-control" placeholder="Nom du produit..." value="@Model.SearchQuery">
+                        </div>
+
+                        <!-- Categories -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Catégorie</label>
+                            <select name="categoryId" class="form-select" onchange="this.form.submit()">
+                                <option value="">Toutes les catégories</option>
+                                @foreach (var category in Model.Categories)
+                                {
+                                    <option value="@category.IdCat" selected="@(Model.SelectedCategoryId == category.IdCat)">
+                                        @category.NomCat
+                                    </option>
+                                }
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search"></i> Rechercher
+                        </button>
+                        
+                        @if (Model.SelectedCategoryId.HasValue || !string.IsNullOrWhiteSpace(Model.SearchQuery))
+                        {
+                            <a asp-action="Catalog" class="btn btn-outline-secondary w-100 mt-2">
+                                <i class="bi bi-x-circle"></i> Réinitialiser
+                            </a>
+                        }
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="col-lg-9">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2>Catalogue de Produits</h2>
+                    <p class="text-muted">@Model.Products.Count produit(s) trouvé(s)</p>
+                </div>
+            </div>
+
+            @if (!Model.Products.Any())
+            {
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> Aucun produit trouvé avec ces critères.
+                </div>
+            }
+            else
+            {
+                <!-- Products -->
+                <div class="row g-4">
+                    @foreach (var product in Model.Products)
+                    {
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 border-0 shadow-sm hover-lift">
+                                @if (!string.IsNullOrEmpty(product.ImagePath))
+                                {
+                                    <img src="~/@product.ImagePath" class="card-img-top" alt="@product.NomArt" style="height: 200px; object-fit: cover;">
+                                }
+                                else
+                                {
+                                    <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 200px;">
+                                        <i class="bi bi-image fs-1"></i>
+                                    </div>
+                                }
+                                <div class="card-body">
+                                    <span class="badge bg-primary mb-2">@product.CategoryName</span>
+                                    <h5 class="card-title">@product.NomArt</h5>
+                                    <p class="card-text text-muted small">
+                                        @if (!string.IsNullOrEmpty(product.DesignationArt))
+                                        {
+                                            @(product.DesignationArt.Length > 60 
+                                                ? product.DesignationArt.Substring(0, 60) + "..." 
+                                                : product.DesignationArt)
+                                        }
+                                    </p>
+                                    <div class="mb-2">
+                                        <small class="text-muted">Réf: @product.ReferenceArt</small>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="h5 text-primary mb-0">@product.PrixUnit?.ToString("N2") DH</span>
+                                        @if (product.ReviewCount > 0)
+                                        {
+                                            <span class="text-warning">
+                                                <i class="bi bi-star-fill"></i> @product.AverageRating?.ToString("N1")
+                                                <small class="text-muted">(@product.ReviewCount)</small>
+                                            </span>
+                                        }
+                                    </div>
+                                    <div class="mb-3">
+                                        @if (product.IsInStock)
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i> En stock (@product.StockQuantity)
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-x-circle"></i> Rupture de stock
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-transparent border-0">
+                                    <a asp-action="ProductDetails" asp-route-id="@product.IdArticle" class="btn btn-outline-primary w-100">
+                                        <i class="bi bi-eye"></i> Voir détails
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Pagination -->
+                @if (Model.TotalPages > 1)
+                {
+                    <nav aria-label="Product pagination" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                                <a class="page-link" asp-action="Catalog" 
+                                   asp-route-page="@(Model.CurrentPage - 1)"
+                                   asp-route-categoryId="@Model.SelectedCategoryId"
+                                   asp-route-search="@Model.SearchQuery">
+                                    Précédent
+                                </a>
+                            </li>
+                            
+                            @for (int i = 1; i <= Model.TotalPages; i++)
+                            {
+                                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                    <a class="page-link" asp-action="Catalog" 
+                                       asp-route-page="@i"
+                                       asp-route-categoryId="@Model.SelectedCategoryId"
+                                       asp-route-search="@Model.SearchQuery">
+                                        @i
+                                    </a>
+                                </li>
+                            }
+                            
+                            <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                                <a class="page-link" asp-action="Catalog" 
+                                   asp-route-page="@(Model.CurrentPage + 1)"
+                                   asp-route-categoryId="@Model.SelectedCategoryId"
+                                   asp-route-search="@Model.SearchQuery">
+                                    Suivant
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-lift {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .hover-lift:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+</style>

@@ -1,0 +1,107 @@
+@model UpdateStockViewModel
+@{
+    ViewData["Title"] = "Mettre à jour le Stock";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-pencil-square"></i> Mettre à jour le Stock</h4>
+                </div>
+                <div class="card-body">
+                    <nav aria-label="breadcrumb" class="mb-3">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a asp-action="Index">Espace Employé</a></li>
+                            <li class="breadcrumb-item"><a asp-action="StockManagement">Gestion des Stocks</a></li>
+                            <li class="breadcrumb-item active">Mise à jour</li>
+                        </ol>
+                    </nav>
+
+                    <form asp-action="UpdateStock" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="IdSt" />
+
+                        <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+
+                        <!-- Informations Article -->
+                        <div class="card mb-3 bg-light">
+                            <div class="card-body">
+                                <h5 class="card-title">Article</h5>
+                                <p class="card-text fs-5"><strong>@Model.NomArticle</strong></p>
+                            </div>
+                        </div>
+
+                        <!-- Quantité Actuelle -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Quantité Actuelle</label>
+                                <div class="input-group input-group-lg">
+                                    <input type="text" class="form-control" value="@Model.CurrentQty" readonly />
+                                    <span class="input-group-text">unités</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Nouvelle Quantité -->
+                        <div class="mb-3">
+                            <label asp-for="NewQty" class="form-label fw-bold"></label>
+                            <div class="input-group input-group-lg">
+                                <input asp-for="NewQty" class="form-control" type="number" min="0" />
+                                <span class="input-group-text">unités</span>
+                            </div>
+                            <span asp-validation-for="NewQty" class="text-danger"></span>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i> Entrez la nouvelle quantité disponible en stock
+                            </div>
+                        </div>
+
+                        <!-- Motif -->
+                        <div class="mb-4">
+                            <label asp-for="Motif" class="form-label"></label>
+                            <textarea asp-for="Motif" class="form-control" rows="3" 
+                                      placeholder="Exemple: Réception de commande, inventaire, correction..."></textarea>
+                            <span asp-validation-for="Motif" class="text-danger"></span>
+                        </div>
+
+                        <!-- Boutons -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="StockManagement" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Enregistrer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function() {
+            // Calculate difference
+            $('#NewQty').on('input', function() {
+                var current = @Model.CurrentQty;
+                var newQty = parseInt($(this).val()) || 0;
+                var diff = newQty - current;
+                
+                var diffText = diff > 0 ? '+' + diff : diff;
+                var diffClass = diff > 0 ? 'text-success' : (diff < 0 ? 'text-danger' : 'text-muted');
+                
+                if (!$('#diff-indicator').length) {
+                    $(this).after('<div id="diff-indicator" class="mt-1"></div>');
+                }
+                
+                $('#diff-indicator').html('<small class="' + diffClass + '"><strong>Différence: ' + diffText + ' unités</strong></small>');
+            });
+        });
+    </script>
+}

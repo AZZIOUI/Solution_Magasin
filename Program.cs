@@ -15,6 +15,15 @@ namespace Solution_Magasin
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
+            // Configure session
+            builder.Services.AddDistributedMemoryCache();
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
+
             // Configuration du contexte de base de données principal
             builder.Services.AddDbContext<DotnetProjectContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -110,6 +119,9 @@ namespace Solution_Magasin
             app.UseStaticFiles();
             
             app.UseRouting();
+
+            // Add session middleware before authentication
+            app.UseSession();
 
             app.UseAuthentication();
             app.UseAuthorization();

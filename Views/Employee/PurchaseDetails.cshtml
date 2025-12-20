@@ -1,0 +1,100 @@
+@model EmployeePurchaseViewModel
+@{
+    ViewData["Title"] = "Détails de l'Achat";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Index">Espace Employé</a></li>
+                    <li class="breadcrumb-item"><a asp-action="PurchaseManagement">Gestion des Achats</a></li>
+                    <li class="breadcrumb-item active">Détails #@Model.IdAchat</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="bi bi-receipt"></i> Achat #@Model.IdAchat
+                        </h4>
+                        <a asp-action="PurchaseManagement" class="btn btn-light btn-sm">
+                            <i class="bi bi-arrow-left"></i> Retour
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Informations Générales -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5><i class="bi bi-truck"></i> Fournisseur</h5>
+                            <p class="mb-1"><strong>@Model.NomFournisseur</strong></p>
+                            <p class="text-muted mb-0">
+                                <i class="bi bi-telephone"></i> @Model.TelFournisseur
+                            </p>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <h5><i class="bi bi-calendar"></i> Date d'Achat</h5>
+                            <p class="mb-1"><strong>@Model.DateAchat?.ToString("dd MMMM yyyy")</strong></p>
+                            <p class="text-muted mb-0">@Model.DateAchat?.ToString("HH:mm")</p>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <!-- Détails des Articles -->
+                    <h5 class="mb-3"><i class="bi bi-box-seam"></i> Articles Achetés</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Article</th>
+                                    <th>Référence</th>
+                                    <th class="text-center">Quantité</th>
+                                    <th class="text-end">Prix Unitaire</th>
+                                    <th class="text-end">Montant</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var detail in Model.Details)
+                                {
+                                    <tr>
+                                        <td>@detail.NomArticle</td>
+                                        <td>@detail.ReferenceArticle</td>
+                                        <td class="text-center">
+                                            <span class="badge bg-info">@detail.Quantite</span>
+                                        </td>
+                                        <td class="text-end">@detail.PrixUnitaire?.ToString("N2") MAD</td>
+                                        <td class="text-end"><strong>@detail.Montant?.ToString("N2") MAD</strong></td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <td colspan="4" class="text-end"><strong>Total:</strong></td>
+                                    <td class="text-end">
+                                        <h5 class="mb-0 text-success">@Model.Total?.ToString("N2") MAD</h5>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- Résumé -->
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="alert alert-info d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="bi bi-info-circle"></i> 
+                                    <strong>Résumé:</strong> @Model.NombreArticles article(s) différent(s) pour un total de @Model.Total?.ToString("N2") MAD
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

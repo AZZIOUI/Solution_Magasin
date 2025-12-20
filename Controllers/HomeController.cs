@@ -36,9 +36,9 @@ namespace Solution_Magasin.Controllers
                     return RedirectToAction("Index", "Employee");
                 }
             }
-
-            // Si non connecté ou aucun rôle reconnu, afficher la page d'accueil publique
-            return View();
+            
+            // Pour les visiteurs, rediriger vers la page d'accueil du visiteur
+            return RedirectToAction("Index", "Visitor");
         }
 
         public IActionResult Privacy()

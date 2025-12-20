@@ -1,42 +1,248 @@
+@model EmployeeDashboardViewModel
 @{
     ViewData["Title"] = "Espace Employé";
 }
 
-<div class="container mt-4">
-    <div class="row">
+<div class="container-fluid mt-4">
+    <!-- En-tête avec informations employé -->
+    <div class="row mb-4">
         <div class="col-12">
-            <h1 class="mb-4">@ViewData["Title"]</h1>
-            <div class="alert alert-info" role="alert">
-                <h4 class="alert-heading">Bienvenue dans votre espace employé !</h4>
-                <p>Vous êtes connecté en tant que <strong>@User.Identity?.Name</strong></p>
-                <p class="mb-0">
-                    Rôle(s) : 
-                    @if (User.IsInRole("Administrateur"))
-                    {
-                        <span class="badge bg-danger">Administrateur</span>
-                    }
-                    @if (User.IsInRole("ResponsableAchat"))
-                    {
-                        <span class="badge bg-warning">Responsable d'Achat</span>
-                    }
-                    @if (User.IsInRole("Magasinier"))
-                    {
-                        <span class="badge bg-primary">Magasinier</span>
-                    }
-                </p>
+            <div class="card border-primary">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h2 class="mb-1">
+                                <i class="bi bi-person-badge"></i> Bienvenue, @Model.NomEmploye
+                            </h2>
+                            <p class="text-muted mb-0">
+                                <strong>CIN:</strong> @Model.Cin | 
+                                <strong>Rôle:</strong> 
+                                @if (Model.Role == "Administrateur")
+                                {
+                                    <span class="badge bg-danger">@Model.Role</span>
+                                }
+                                else if (Model.Role == "ResponsableAchat")
+                                {
+                                    <span class="badge bg-warning text-dark">Responsable d'Achat</span>
+                                }
+                                else if (Model.Role == "Magasinier")
+                                {
+                                    <span class="badge bg-primary">@Model.Role</span>
+                                }
+                                @if (Model.DateEmbauche.HasValue)
+                                {
+                                    <text> | </text>
+                                    <strong>Embauché(e) le:</strong> @Model.DateEmbauche.Value.ToString("dd/MM/yyyy")
+                                }
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="btn-group" role="group">
+                                @if (Model.PresenceAujourdhui == null)
+                                {
+                                    <form asp-action="CheckIn" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="bi bi-clock-history"></i> Enregistrer Arrivée
+                                        </button>
+                                    </form>
+                                }
+                                else if (!Model.PresenceAujourdhui.IsCompleted)
+                                {
+                                    <form asp-action="CheckOut" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="idPr" value="@Model.PresenceAujourdhui.IdPr" />
+                                        <button type="submit" class="btn btn-warning">
+                                            <i class="bi bi-clock"></i> Enregistrer Départ
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-secondary" disabled>
+                                        <i class="bi bi-check-circle"></i> Présence Complète
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="row mt-4">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Présence Aujourd'hui -->
+    @if (Model.PresenceAujourdhui != null)
+    {
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-calendar-check"></i> Présence Aujourd'hui</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <strong>Arrivée:</strong> @Model.PresenceAujourdhui.HeureArrive?.ToString("HH:mm")
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Départ:</strong> @(Model.PresenceAujourdhui.HeureDepart?.ToString("HH:mm") ?? "En cours")
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Durée:</strong> @Model.PresenceAujourdhui.Duree
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Statistiques -->
+    <div class="row mb-4">
+        <!-- Statistiques de Présence -->
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-white">Présences ce mois</h6>
+                            <h2 class="mb-0">@Model.PresencesCeMois</h2>
+                        </div>
+                        <div class="fs-1">
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-light">
+                    <small>@Model.HeuresTotalesCeMois.ToString("F1") heures totales</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques de Stock (pour Magasinier et Admin) -->
+        @if (User.IsInRole("Magasinier") || User.IsInRole("Administrateur"))
+        {
+            <div class="col-md-6 col-lg-3 mb-3">
+                <div class="card text-white bg-warning">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title text-white">Alertes Stock</h6>
+                                <h2 class="mb-0">@Model.AlertesStock</h2>
+                            </div>
+                            <div class="fs-1">
+                                <i class="bi bi-exclamation-triangle"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent border-light">
+                        <a asp-action="StockManagement" asp-route-filter="lowstock" class="text-white text-decoration-none">
+                            <small>Voir les stocks faibles <i class="bi bi-arrow-right"></i></small>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3 mb-3">
+                <div class="card text-white bg-danger">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title text-white">Ruptures</h6>
+                                <h2 class="mb-0">@Model.ArticlesEnRupture</h2>
+                            </div>
+                            <div class="fs-1">
+                                <i class="bi bi-x-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent border-light">
+                        <a asp-action="StockManagement" asp-route-filter="outofstock" class="text-white text-decoration-none">
+                            <small>Voir les ruptures <i class="bi bi-arrow-right"></i></small>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3 mb-3">
+                <div class="card text-white bg-primary">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title text-white">Notifications</h6>
+                                <h2 class="mb-0">@Model.NotificationsNonLues</h2>
+                            </div>
+                            <div class="fs-1">
+                                <i class="bi bi-bell"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent border-light">
+                        <a asp-action="StockNotifications" class="text-white text-decoration-none">
+                            <small>Voir les notifications <i class="bi bi-arrow-right"></i></small>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Statistiques d'Achats (pour Responsable d'Achat et Admin) -->
+        @if (User.IsInRole("ResponsableAchat") || User.IsInRole("Administrateur"))
+        {
+            <div class="col-md-6 col-lg-3 mb-3">
+                <div class="card text-white bg-success">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title text-white">Achats ce mois</h6>
+                                <h2 class="mb-0">@Model.AchatsCeMois</h2>
+                            </div>
+                            <div class="fs-1">
+                                <i class="bi bi-cart-check"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent border-light">
+                        <small>@Model.TotalAchatsCeMois.ToString("N2") MAD</small>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Accès Rapide -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h4 class="mb-3"><i class="bi bi-grid-3x3"></i> Accès Rapide</h4>
+        </div>
+
         @if (User.IsInRole("Administrateur") || User.IsInRole("Magasinier"))
         {
-            <div class="col-md-4 mb-3">
-                <div class="card">
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card h-100 shadow-sm">
                     <div class="card-body">
-                        <h5 class="card-title">Gestion des Stocks</h5>
-                        <p class="card-text">Gérez les stocks, les articles et les notifications.</p>
-                        <a asp-action="StockManagement" class="btn btn-primary">Accéder</a>
+                        <h5 class="card-title">
+                            <i class="bi bi-boxes text-primary"></i> Gestion des Stocks
+                        </h5>
+                        <p class="card-text">Gérez les stocks, consultez les alertes et mettez à jour les quantités disponibles.</p>
+                        <a asp-action="StockManagement" class="btn btn-primary">
+                            <i class="bi bi-arrow-right-circle"></i> Accéder
+                        </a>
                     </div>
                 </div>
             </div>
@@ -44,40 +250,113 @@
 
         @if (User.IsInRole("Administrateur") || User.IsInRole("ResponsableAchat"))
         {
-            <div class="col-md-4 mb-3">
-                <div class="card">
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card h-100 shadow-sm">
                     <div class="card-body">
-                        <h5 class="card-title">Gestion des Achats</h5>
-                        <p class="card-text">Gérez les achats auprès des fournisseurs.</p>
-                        <a asp-action="PurchaseManagement" class="btn btn-primary">Accéder</a>
-                    </div>
-                </div>
-            </div>
-        }
-
-        @if (User.IsInRole("Administrateur"))
-        {
-            <div class="col-md-4 mb-3">
-                <div class="card border-danger">
-                    <div class="card-body">
-                        <h5 class="card-title text-danger">
-                            <i class="bi bi-shield-lock"></i> Administration
+                        <h5 class="card-title">
+                            <i class="bi bi-cart-check text-success"></i> Gestion des Achats
                         </h5>
-                        <p class="card-text">Gestion des utilisateurs, employés et paramètres système.</p>
-                        <a asp-controller="Admin" asp-action="Index" class="btn btn-danger">Accéder</a>
+                        <p class="card-text">Créez de nouveaux achats, consultez l'historique et gérez les fournisseurs.</p>
+                        <a asp-action="PurchaseManagement" class="btn btn-success">
+                            <i class="bi bi-arrow-right-circle"></i> Accéder
+                        </a>
                     </div>
                 </div>
             </div>
         }
 
-        <div class="col-md-4 mb-3">
-            <div class="card">
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card h-100 shadow-sm">
                 <div class="card-body">
-                    <h5 class="card-title">Tableau de bord</h5>
-                    <p class="card-text">Consultez les statistiques et rapports.</p>
-                    <a href="#" class="btn btn-primary">Voir le tableau de bord</a>
+                    <h5 class="card-title">
+                        <i class="bi bi-clock-history text-info"></i> Mes Présences
+                    </h5>
+                    <p class="card-text">Consultez votre historique de présences et vos heures de travail.</p>
+                    <a asp-action="Presence" class="btn btn-info text-white">
+                        <i class="bi bi-arrow-right-circle"></i> Accéder
+                    </a>
                 </div>
             </div>
         </div>
+
+        @if (User.IsInRole("Administrateur"))
+        {
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card h-100 shadow-sm border-danger">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-shield-lock text-danger"></i> Administration
+                        </h5>
+                        <p class="card-text">Accédez au panneau d'administration complet du système.</p>
+                        <a asp-controller="Admin" asp-action="Index" class="btn btn-danger">
+                            <i class="bi bi-arrow-right-circle"></i> Accéder
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
+
+    <!-- Dernières Notifications (pour Magasinier et Admin) -->
+    @if ((User.IsInRole("Magasinier") || User.IsInRole("Administrateur")) && Model.DernieresNotifications.Any())
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-bell"></i> Dernières Notifications
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            @foreach (var notification in Model.DernieresNotifications)
+                            {
+                                <div class="list-group-item @(!notification.Vu ? "list-group-item-warning" : "")">
+                                    <div class="d-flex w-100 justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">
+                                                @if (!notification.Vu)
+                                                {
+                                                    <span class="badge bg-warning text-dark">Nouveau</span>
+                                                }
+                                                @notification.NomArticle
+                                            </h6>
+                                            <p class="mb-1">@notification.Message</p>
+                                            <small class="text-muted">
+                                                <i class="bi bi-clock"></i> @notification.DateNotification?.ToString("dd/MM/yyyy HH:mm")
+                                            </small>
+                                        </div>
+                                        @if (!notification.Vu)
+                                        {
+                                            <form asp-action="MarkNotificationAsRead" asp-route-id="@notification.IdNot" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-check"></i> Marquer lu
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="card-footer text-center">
+                        <a asp-action="StockNotifications" class="text-decoration-none">
+                            Voir toutes les notifications <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 </div>
+
+@section Scripts {
+    <script>
+        // Auto-hide alerts after 5 seconds
+        setTimeout(function() {
+            $('.alert').alert('close');
+        }, 5000);
+    </script>
+}

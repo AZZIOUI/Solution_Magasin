@@ -1,0 +1,186 @@
+@model IEnumerable<EmployeeStockViewModel>
+@{
+    ViewData["Title"] = "Gestion des Stocks";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="bi bi-boxes"></i> Gestion des Stocks</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Index">Espace Employé</a></li>
+                    <li class="breadcrumb-item active">Gestion des Stocks</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="col-md-4 text-end">
+            <a asp-action="StockNotifications" class="btn btn-primary">
+                <i class="bi bi-bell"></i> Notifications
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Filtres et Recherche -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" asp-action="StockManagement" class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Rechercher</label>
+                    <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" 
+                           class="form-control" placeholder="Nom ou référence d'article...">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Filtre</label>
+                    <select name="filter" class="form-select">
+                        <option value="">Tous les articles</option>
+                        <option value="lowstock" selected="@(ViewBag.Filter == "lowstock")">Stock faible</option>
+                        <option value="outofstock" selected="@(ViewBag.Filter == "outofstock")">En rupture</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Rechercher
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Statistiques Rapides -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Total Articles</h5>
+                    <h2 class="text-primary">@Model.Count()</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Stock Faible</h5>
+                    <h2 class="text-warning">@Model.Count(m => m.IsLowStock)</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">En Rupture</h5>
+                    <h2 class="text-danger">@Model.Count(m => m.IsOutOfStock)</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Stock OK</h5>
+                    <h2 class="text-success">@Model.Count(m => !m.IsLowStock && !m.IsOutOfStock)</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table des Stocks -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-table"></i> Liste des Stocks</h5>
+        </div>
+        <div class="card-body">
+            @if (!Model.Any())
+            {
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> Aucun article trouvé.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover" id="stockTable">
+                        <thead>
+                            <tr>
+                                <th>Référence</th>
+                                <th>Article</th>
+                                <th>Catégorie</th>
+                                <th>Qté Disponible</th>
+                                <th>Stock Min/Max</th>
+                                <th>Niveau</th>
+                                <th>Prix Unit.</th>
+                                <th>Dernière Modif.</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr class="@(item.IsOutOfStock ? "table-danger" : item.IsLowStock ? "table-warning" : "")">
+                                    <td>@item.ReferenceArticle</td>
+                                    <td>
+                                        <strong>@item.NomArticle</strong>
+                                        @if (item.IsOutOfStock)
+                                        {
+                                            <br /><span class="badge bg-danger">Rupture</span>
+                                        }
+                                        else if (item.IsLowStock)
+                                        {
+                                            <br /><span class="badge bg-warning text-dark">Stock Faible</span>
+                                        }
+                                    </td>
+                                    <td>@item.Categorie</td>
+                                    <td>
+                                        <strong class="fs-5">@item.QteDispo</strong>
+                                    </td>
+                                    <td>@item.Stockmin / @item.Stockmax</td>
+                                    <td>
+                                        <div class="progress" style="height: 25px;">
+                                            <div class="progress-bar @(item.IsOutOfStock ? "bg-danger" : item.IsLowStock ? "bg-warning" : "bg-success")" 
+                                                 role="progressbar" 
+                                                 style="width: @item.StockPercentage%"
+                                                 aria-valuenow="@item.StockPercentage" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                                @item.StockPercentage%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>@(item.PrixUnit?.ToString("N2")) MAD</td>
+                                    <td>@(item.DateModification?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                    <td>
+                                        <a asp-action="UpdateStock" asp-route-id="@item.IdSt" 
+                                           class="btn btn-sm btn-primary" title="Mettre à jour">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#stockTable').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/fr-FR.json'
+                },
+                pageLength: 25,
+                order: [[3, 'asc']]
+            });
+        });
+    </script>
+}

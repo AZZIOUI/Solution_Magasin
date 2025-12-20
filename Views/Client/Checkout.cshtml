@@ -1,0 +1,86 @@
+@model Solution_Magasin.ViewModels.CheckoutViewModel
+@{
+    ViewData["Title"] = "Finaliser la commande";
+}
+
+<div class="container py-4">
+    <h2 class="mb-4"><i class="bi bi-bag-check"></i> Finaliser la commande</h2>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Informations de livraison</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Checkout" method="post">
+                        <div class="mb-3">
+                            <label asp-for="ShippingAddress" class="form-label"></label>
+                            <textarea asp-for="ShippingAddress" class="form-control" rows="3" required></textarea>
+                            <span asp-validation-for="ShippingAddress" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Phone" class="form-label"></label>
+                            <input asp-for="Phone" class="form-control" required />
+                            <span asp-validation-for="Phone" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="DeliveryInstructions" class="form-label"></label>
+                            <textarea asp-for="DeliveryInstructions" class="form-control" rows="2"></textarea>
+                            <span asp-validation-for="DeliveryInstructions" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <a asp-action="Cart" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Retour au panier
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-credit-card"></i> Continuer vers le paiement
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Récapitulatif</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6>Articles (@Model.Cart.TotalItems)</h6>
+                        @foreach (var item in Model.Cart.Items)
+                        {
+                            <div class="d-flex justify-content-between mb-1">
+                                <small>@item.ProductName x @item.Quantity</small>
+                                <small>@item.TotalPrice.ToString("N2") DH</small>
+                            </div>
+                        }
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Sous-total</span>
+                        <strong>@Model.Cart.Subtotal.ToString("N2") DH</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Frais de livraison</span>
+                        <strong>@Model.Cart.ShippingCost.ToString("N2") DH</strong>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <span class="h5">Total</span>
+                        <strong class="h5 text-primary">@Model.Cart.Total.ToString("N2") DH</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

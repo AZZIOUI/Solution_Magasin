@@ -1,0 +1,148 @@
+@model IEnumerable<StockNotificationViewModel>
+@{
+    ViewData["Title"] = "Notifications de Stock";
+    bool showRead = ViewBag.ShowRead ?? false;
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="bi bi-bell"></i> Notifications de Stock</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Index">Espace Employé</a></li>
+                    <li class="breadcrumb-item active">Notifications</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="col-md-4 text-end">
+            <a asp-action="StockManagement" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Retour aux Stocks
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="btn-group" role="group">
+                <a asp-action="StockNotifications" asp-route-showRead="false" 
+                   class="btn @(!showRead ? "btn-primary" : "btn-outline-primary")">
+                    <i class="bi bi-envelope"></i> Non lues (@Model.Count(n => !n.Vu))
+                </a>
+                <a asp-action="StockNotifications" asp-route-showRead="true" 
+                   class="btn @(showRead ? "btn-primary" : "btn-outline-primary")">
+                    <i class="bi bi-envelope-open"></i> Toutes (@Model.Count())
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des Notifications -->
+    @if (!Model.Any())
+    {
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-check-circle text-success" style="font-size: 4rem;"></i>
+                <h4 class="mt-3">Aucune notification</h4>
+                <p class="text-muted">Vous n'avez aucune notification de stock pour le moment.</p>
+                <a asp-action="StockManagement" class="btn btn-primary mt-3">
+                    <i class="bi bi-boxes"></i> Aller à la Gestion des Stocks
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var notification in Model)
+            {
+                <div class="col-12 mb-3">
+                    <div class="card @(!notification.Vu ? "border-warning shadow" : "")">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-1 text-center">
+                                    @if (!notification.Vu)
+                                    {
+                                        <i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 2rem;"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
+                                    }
+                                </div>
+                                <div class="col-md-7">
+                                    <h5 class="mb-1">
+                                        @if (!notification.Vu)
+                                        {
+                                            <span class="badge bg-warning text-dark me-2">Nouveau</span>
+                                        }
+                                        @notification.NomArticle
+                                    </h5>
+                                    <p class="mb-2">@notification.Message</p>
+                                    <small class="text-muted">
+                                        <i class="bi bi-clock"></i> @notification.DateNotification?.ToString("dd/MM/yyyy HH:mm")
+                                        @if (!string.IsNullOrEmpty(notification.ReferenceArticle))
+                                        {
+                                            <span class="ms-3">
+                                                <i class="bi bi-tag"></i> Réf: @notification.ReferenceArticle
+                                            </span>
+                                        }
+                                    </small>
+                                </div>
+                                <div class="col-md-2 text-center">
+                                    @if (notification.QteDispo.HasValue && notification.Stockmin.HasValue)
+                                    {
+                                        <div class="mb-2">
+                                            <strong class="text-danger fs-5">@notification.QteDispo</strong>
+                                            <small class="text-muted">/ @notification.Stockmin min</small>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="col-md-2 text-end">
+                                    @if (!notification.Vu)
+                                    {
+                                        <form asp-action="MarkNotificationAsRead" asp-route-id="@notification.IdNot" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-success btn-sm mb-2 w-100">
+                                                <i class="bi bi-check"></i> Marquer lu
+                                            </button>
+                                        </form>
+                                    }
+                                    <a href="@Url.Action("StockManagement", new { searchTerm = notification.ReferenceArticle })" 
+                                       class="btn btn-primary btn-sm w-100">
+                                        <i class="bi bi-arrow-right"></i> Voir le stock
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Pagination Info -->
+        <div class="card mt-3">
+            <div class="card-body text-center">
+                <p class="mb-0 text-muted">
+                    Total: <strong>@Model.Count()</strong> notification(s) 
+                    | Non lues: <strong class="text-warning">@Model.Count(n => !n.Vu)</strong>
+                </p>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-refresh every 30 seconds if there are unread notifications
+        @if (Model.Any(n => !n.Vu))
+        {
+            <text>
+            setTimeout(function() {
+                location.reload();
+            }, 30000);
+            </text>
+        }
+    </script>
+}

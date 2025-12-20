@@ -1,0 +1,151 @@
+@model Solution_Magasin.ViewModels.OrderDetailsViewModel
+@{
+    ViewData["Title"] = $"Commande #{Model.IdVente}";
+}
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Espace Client</a></li>
+            <li class="breadcrumb-item"><a asp-action="MyOrders">Mes Commandes</a></li>
+            <li class="breadcrumb-item active">Commande #@Model.IdVente</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">Commande #@Model.IdVente</h4>
+                        <span class="badge @(Model.PaymentStatus == "Payé" ? "bg-success" : "bg-warning") fs-6">
+                            @Model.PaymentStatus
+                        </span>
+                    </div>
+                    <small class="text-muted">Passée le @Model.DateVente?.ToString("dd MMMM yyyy à HH:mm")</small>
+                </div>
+                <div class="card-body">
+                    <h6 class="mb-3">Articles commandés</h6>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Produit</th>
+                                    <th>Prix unitaire</th>
+                                    <th>Quantité</th>
+                                    <th class="text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                @if (!string.IsNullOrEmpty(item.ImagePath))
+                                                {
+                                                    <img src="~/@item.ImagePath" alt="@item.ProductName" class="me-3 rounded" style="width: 60px; height: 60px; object-fit: cover;">
+                                                }
+                                                else
+                                                {
+                                                    <div class="bg-secondary text-white d-flex align-items-center justify-content-center me-3 rounded" style="width: 60px; height: 60px;">
+                                                        <i class="bi bi-image"></i>
+                                                    </div>
+                                                }
+                                                <div>
+                                                    <strong>@item.ProductName</strong><br>
+                                                    <small class="text-muted">Réf: @item.ProductReference</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="align-middle">@item.UnitPrice.ToString("N2") DH</td>
+                                        <td class="align-middle">@item.Quantity</td>
+                                        <td class="align-middle text-end">
+                                            <strong>@item.TotalPrice.ToString("N2") DH</strong>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <a asp-action="MyOrders" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left"></i> Retour aux commandes
+                </a>
+                <button onclick="window.print()" class="btn btn-outline-secondary">
+                    <i class="bi bi-printer"></i> Imprimer
+                </button>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Summary Card -->
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">Récapitulatif</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Sous-total</span>
+                        <strong>@Model.Items.Sum(i => i.TotalPrice).ToString("N2") DH</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Frais de livraison</span>
+                        <strong>50.00 DH</strong>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <span class="h6">Total</span>
+                        <strong class="h6 text-primary">@Model.TotalAmount?.ToString("N2") DH</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Info -->
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">Informations de paiement</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        <strong>Méthode:</strong><br>
+                        @Model.PaymentMethod
+                    </p>
+                    <p class="mb-0">
+                        <strong>Statut:</strong><br>
+                        <span class="badge @(Model.PaymentStatus == "Payé" ? "bg-success" : "bg-warning")">
+                            @Model.PaymentStatus
+                        </span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Delivery Info -->
+            @if (!string.IsNullOrEmpty(Model.ShippingAddress))
+            {
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white">
+                        <h6 class="mb-0">Adresse de livraison</h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-2">@Model.ShippingAddress</p>
+                        @if (!string.IsNullOrEmpty(Model.Phone))
+                        {
+                            <p class="mb-0">
+                                <i class="bi bi-telephone"></i> @Model.Phone
+                            </p>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style media="print">
+    nav, .btn, footer, header { display: none !important; }
+    .container { max-width: 100% !important; }
+</style>

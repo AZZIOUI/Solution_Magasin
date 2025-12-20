@@ -1,0 +1,92 @@
+@model Solution_Magasin.ViewModels.OrderDetailsViewModel
+@{
+    ViewData["Title"] = "Confirmation de commande";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+                    <h2 class="mt-3">Commande confirmée !</h2>
+                    <p class="lead text-muted">Merci pour votre commande</p>
+                    <p>Votre commande <strong>#@Model.IdVente</strong> a été enregistrée avec succès.</p>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow mt-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Détails de la commande</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Numéro de commande:</strong> #@Model.IdVente</p>
+                            <p class="mb-1"><strong>Date:</strong> @Model.DateVente?.ToString("dd/MM/yyyy HH:mm")</p>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <p class="mb-1"><strong>Statut du paiement:</strong> 
+                                <span class="badge bg-success">@Model.PaymentStatus</span>
+                            </p>
+                            <p class="mb-1"><strong>Méthode:</strong> @Model.PaymentMethod</p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h6 class="mb-3">Articles commandés</h6>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Produit</th>
+                                    <th>Quantité</th>
+                                    <th>Prix unitaire</th>
+                                    <th class="text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                @if (!string.IsNullOrEmpty(item.ImagePath))
+                                                {
+                                                    <img src="~/@item.ImagePath" alt="@item.ProductName" class="me-2 rounded" style="width: 50px; height: 50px; object-fit: cover;">
+                                                }
+                                                <div>
+                                                    <strong>@item.ProductName</strong><br>
+                                                    <small class="text-muted">@item.ProductReference</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>@item.Quantity</td>
+                                        <td>@item.UnitPrice.ToString("N2") DH</td>
+                                        <td class="text-end">@item.TotalPrice.ToString("N2") DH</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                                    <td class="text-end"><strong class="text-primary">@Model.TotalAmount?.ToString("N2") DH</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a asp-action="MyOrders" class="btn btn-primary me-2">
+                    <i class="bi bi-list-ul"></i> Mes commandes
+                </a>
+                <a asp-controller="Visitor" asp-action="Catalog" class="btn btn-outline-primary">
+                    <i class="bi bi-grid"></i> Continuer mes achats
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,241 @@
+@model Solution_Magasin.ViewModels.ProductDetailsViewModel
+@{
+    ViewData["Title"] = Model.NomArt;
+}
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Accueil</a></li>
+            <li class="breadcrumb-item"><a asp-action="Catalog">Catalogue</a></li>
+            @if (!string.IsNullOrEmpty(Model.CategoryName))
+            {
+                <li class="breadcrumb-item">@Model.CategoryName</li>
+            }
+            <li class="breadcrumb-item active">@Model.NomArt</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Product Image -->
+        <div class="col-lg-5 mb-4">
+            <div class="card border-0 shadow-sm">
+                @if (!string.IsNullOrEmpty(Model.ImagePath))
+                {
+                    <img src="~/@Model.ImagePath" class="card-img-top" alt="@Model.NomArt" style="max-height: 400px; object-fit: contain;">
+                }
+                else
+                {
+                    <div class="bg-light text-secondary d-flex align-items-center justify-content-center" style="height: 400px;">
+                        <i class="bi bi-image" style="font-size: 5rem;"></i>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Product Details -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <span class="badge bg-primary mb-2">@Model.CategoryName</span>
+                    <h2 class="mb-3">@Model.NomArt</h2>
+                    
+                    @if (Model.ReviewCount > 0)
+                    {
+                        <div class="mb-3">
+                            <span class="text-warning fs-5">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    @if (i <= Math.Round(Model.AverageRating ?? 0))
+                                    {
+                                        <i class="bi bi-star-fill"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-star"></i>
+                                    }
+                                }
+                                <span class="text-dark ms-2">@Model.AverageRating?.ToString("N1")</span>
+                            </span>
+                            <span class="text-muted ms-2">(@Model.ReviewCount avis)</span>
+                        </div>
+                    }
+
+                    <div class="mb-3">
+                        <small class="text-muted">Référence: @Model.ReferenceArt</small>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.DesignationArt))
+                    {
+                        <p class="lead">@Model.DesignationArt</p>
+                    }
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h3 class="text-primary mb-0">@Model.PrixUnit?.ToString("N2") DH</h3>
+                        </div>
+                        <div>
+                            @if (Model.IsInStock)
+                            {
+                                <span class="badge bg-success fs-6">
+                                    <i class="bi bi-check-circle"></i> En stock (@Model.StockQuantity)
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger fs-6">
+                                    <i class="bi bi-x-circle"></i> Rupture de stock
+                                </span>
+                            }
+                        </div>
+                    </div>
+
+                    @if (User.IsInRole("Client"))
+                    {
+                        @if (Model.IsInStock)
+                        {
+                            <form id="addToCartForm" asp-controller="Client" asp-action="AddToCart" method="post">
+                                <input type="hidden" name="productId" value="@Model.IdArticle" />
+                                <div class="row g-2 mb-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Quantité</label>
+                                        <input type="number" name="quantity" class="form-control" value="1" min="1" max="@Model.StockQuantity" />
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-lg w-100 mb-2">
+                                    <i class="bi bi-cart-plus"></i> Ajouter au panier
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <button class="btn btn-secondary btn-lg w-100" disabled>
+                                <i class="bi bi-x-circle"></i> Produit indisponible
+                            </button>
+                        }
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Url.Action("ProductDetails", "Visitor", new { id = Model.IdArticle })">Connectez-vous</a>
+                            pour ajouter ce produit au panier.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reviews Section -->
+    @if (Model.Reviews.Any())
+    {
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white">
+                        <h4><i class="bi bi-chat-square-text"></i> Avis clients (@Model.ReviewCount)</h4>
+                    </div>
+                    <div class="card-body">
+                        @foreach (var review in Model.Reviews.Take(5))
+                        {
+                            <div class="review-item mb-3 pb-3 border-bottom">
+                                <div class="d-flex justify-content-between">
+                                    <strong>@review.ClientName</strong>
+                                    <small class="text-muted">@review.DateReview?.ToString("dd/MM/yyyy")</small>
+                                </div>
+                                <div class="text-warning mb-2">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        @if (i <= review.Rating)
+                                        {
+                                            <i class="bi bi-star-fill"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-star"></i>
+                                        }
+                                    }
+                                </div>
+                                <p class="mb-0">@review.Comment</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Related Products -->
+    @if (Model.RelatedProducts.Any())
+    {
+        <div class="row mt-4">
+            <div class="col-12">
+                <h4 class="mb-3">Produits similaires</h4>
+                <div class="row g-3">
+                    @foreach (var product in Model.RelatedProducts)
+                    {
+                        <div class="col-md-3">
+                            <div class="card h-100 border-0 shadow-sm">
+                                @if (!string.IsNullOrEmpty(product.ImagePath))
+                                {
+                                    <img src="~/@product.ImagePath" class="card-img-top" alt="@product.NomArt" style="height: 150px; object-fit: cover;">
+                                }
+                                else
+                                {
+                                    <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 150px;">
+                                        <i class="bi bi-image"></i>
+                                    </div>
+                                }
+                                <div class="card-body">
+                                    <h6 class="card-title">@product.NomArt</h6>
+                                    <p class="text-primary mb-2">@product.PrixUnit?.ToString("N2") DH</p>
+                                    <a asp-action="ProductDetails" asp-route-id="@product.IdArticle" class="btn btn-sm btn-outline-primary w-100">
+                                        Voir détails
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('addToCartForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    // Update cart count in navigation if exists
+                    const cartBadge = document.querySelector('.cart-count');
+                    if (cartBadge) {
+                        cartBadge.textContent = data.cartItemCount;
+                    }
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Une erreur est survenue');
+            });
+        });
+    </script>
+}

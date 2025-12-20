@@ -1,11 +1,13 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Solution_Magasin</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Solution_Magasin.styles.css" asp-append-version="true" />
 </head>
@@ -13,7 +15,9 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Solution_Magasin</a>
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-shop"></i> Solution_Magasin
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -21,46 +25,114 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Accueil</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house"></i> Accueil
+                            </a>
                         </li>
                         @if (User.Identity?.IsAuthenticated == true)
                         {
+                            @if (User.IsInRole("Administrateur"))
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-dark" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-speedometer2"></i> Administration
+                                    </a>
+                                    <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Index">
+                                            <i class="bi bi-speedometer2"></i> Tableau de Bord
+                                        </a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><h6 class="dropdown-header">Gestion des Produits</h6></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Products">
+                                            <i class="bi bi-box-seam"></i> Produits
+                                        </a></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Categories">
+                                            <i class="bi bi-tags"></i> Catégories
+                                        </a></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Stock">
+                                            <i class="bi bi-boxes"></i> Stock
+                                        </a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><h6 class="dropdown-header">Gestion Commerciale</h6></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Suppliers">
+                                            <i class="bi bi-truck"></i> Fournisseurs
+                                        </a></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Purchases">
+                                            <i class="bi bi-cart-check"></i> Achats
+                                        </a></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Sales">
+                                            <i class="bi bi-bag-check"></i> Ventes
+                                        </a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><h6 class="dropdown-header">Gestion des Utilisateurs</h6></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Users">
+                                            <i class="bi bi-people"></i> Utilisateurs
+                                        </a></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="CreateEmployee">
+                                            <i class="bi bi-person-plus"></i> Nouvel Employé
+                                        </a></li>
+                                    </ul>
+                                </li>
+                            }
                             @if (User.IsInRole("Client"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Client" asp-action="Index">Espace Client</a>
+                                    <a class="nav-link text-dark" asp-controller="Client" asp-action="Index">
+                                        <i class="bi bi-person-circle"></i> Espace Client
+                                    </a>
                                 </li>
                             }
-                            @if (User.IsInRole("Administrateur") || User.IsInRole("ResponsableAchat") || User.IsInRole("Magasinier"))
+                            @if (User.IsInRole("ResponsableAchat") || User.IsInRole("Magasinier"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Employee" asp-action="Index">Espace Employé</a>
+                                    <a class="nav-link text-dark" asp-controller="Employee" asp-action="Index">
+                                        <i class="bi bi-briefcase"></i> Espace Employé
+                                    </a>
                                 </li>
                             }
                         }
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Confidentialité</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">
+                                <i class="bi bi-shield-check"></i> Confidentialité
+                            </a>
                         </li>
                     </ul>
                     <ul class="navbar-nav">
                         @if (User.Identity?.IsAuthenticated == true)
                         {
-                            <li class="nav-item">
-                                <span class="nav-link text-dark">Bonjour, @User.Identity.Name</span>
-                            </li>
-                            <li class="nav-item">
-                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                                    <button type="submit" class="nav-link btn btn-link text-dark">Déconnexion</button>
-                                </form>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-dark" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-person-circle"></i> @User.Identity.Name
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    @if (User.IsInRole("Client"))
+                                    {
+                                        <li><a class="dropdown-item" asp-controller="Client" asp-action="Profile">
+                                            <i class="bi bi-person"></i> Mon Profil
+                                        </a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                    }
+                                    <li>
+                                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                            <button type="submit" class="dropdown-item">
+                                                <i class="bi bi-box-arrow-right"></i> Déconnexion
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
                             </li>
                         }
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Connexion</a>
+                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">
+                                    <i class="bi bi-box-arrow-in-right"></i> Connexion
+                                </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Inscription</a>
+                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">
+                                    <i class="bi bi-person-plus"></i> Inscription
+                                </a>
                             </li>
                         }
                     </ul>
@@ -68,19 +140,21 @@
             </div>
         </nav>
     </header>
-    <div class="container">
+    <div class="container-fluid">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="border-top footer text-muted mt-5">
         <div class="container">
             &copy; 2025 - Solution_Magasin - <a asp-area="" asp-controller="Home" asp-action="Privacy">Confidentialité</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

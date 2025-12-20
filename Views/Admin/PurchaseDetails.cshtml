@@ -1,0 +1,84 @@
+@model Solution_Magasin.ViewModels.PurchaseViewModel
+
+@{
+    ViewData["Title"] = "Détails de l'Achat";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-cart-check"></i> @ViewData["Title"] #@Model.Id</h1>
+        <a asp-action="Purchases" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Retour à la liste
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-list-ul"></i> Articles Achetés</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Référence</th>
+                                    <th>Produit</th>
+                                    <th>Prix Unitaire</th>
+                                    <th>Quantité</th>
+                                    <th>Sous-total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var detail in Model.Details)
+                                {
+                                    <tr>
+                                        <td><strong>@detail.Reference</strong></td>
+                                        <td>@detail.ProductName</td>
+                                        <td>@detail.UnitPrice.ToString("C2")</td>
+                                        <td>@detail.Quantity</td>
+                                        <td><strong>@detail.Subtotal.ToString("C2")</strong></td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-secondary">
+                                    <th colspan="4" class="text-end">Total:</th>
+                                    <th>@Model.Total.ToString("C2")</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Informations</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Date d'achat:</dt>
+                        <dd class="col-sm-7">@(Model.PurchaseDate?.ToString("dd/MM/yyyy HH:mm") ?? "-")</dd>
+
+                        <dt class="col-sm-5">Fournisseur:</dt>
+                        <dd class="col-sm-7">@Model.SupplierName</dd>
+
+                        <dt class="col-sm-5">Nb. Articles:</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge bg-info">@Model.ItemCount</span>
+                        </dd>
+
+                        <dt class="col-sm-5">Total:</dt>
+                        <dd class="col-sm-7">
+                            <strong class="text-primary fs-5">@Model.Total.ToString("C2")</strong>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

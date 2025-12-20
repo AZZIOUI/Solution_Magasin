@@ -1,0 +1,143 @@
+@model Solution_Magasin.ViewModels.SalesViewModel
+
+@{
+    ViewData["Title"] = "Détails de la Vente";
+    var statusClass = Model.Status switch
+    {
+        "Livrée" => "success",
+        "En cours" => "warning",
+        "Annulée" => "danger",
+        _ => "secondary"
+    };
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-bag-check"></i> @ViewData["Title"] #@Model.Id</h1>
+        <a asp-action="Sales" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Retour à la liste
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-list-ul"></i> Articles Vendus</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Référence</th>
+                                    <th>Produit</th>
+                                    <th>Prix Unitaire</th>
+                                    <th>Quantité</th>
+                                    <th>Sous-total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var detail in Model.Details)
+                                {
+                                    <tr>
+                                        <td><strong>@detail.Reference</strong></td>
+                                        <td>@detail.ProductName</td>
+                                        <td>@detail.UnitPrice.ToString("C2")</td>
+                                        <td>@detail.Quantity</td>
+                                        <td><strong>@detail.Subtotal.ToString("C2")</strong></td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-secondary">
+                                    <th colspan="4" class="text-end">Total:</th>
+                                    <th>@Model.Total.ToString("C2")</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Informations</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Date de vente:</dt>
+                        <dd class="col-sm-7">@(Model.SaleDate?.ToString("dd/MM/yyyy HH:mm") ?? "-")</dd>
+
+                        <dt class="col-sm-5">Client:</dt>
+                        <dd class="col-sm-7">@Model.ClientName</dd>
+
+                        <dt class="col-sm-5">Nb. Articles:</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge bg-info">@Model.ItemCount</span>
+                        </dd>
+
+                        <dt class="col-sm-5">Paiement:</dt>
+                        <dd class="col-sm-7">@(Model.PaymentMethod ?? "Non spécifié")</dd>
+
+                        <dt class="col-sm-5">Statut:</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge bg-@statusClass">@Model.Status</span>
+                        </dd>
+
+                        @if (!string.IsNullOrEmpty(Model.DeliveryAddress))
+                        {
+                            <dt class="col-sm-5">Livraison:</dt>
+                            <dd class="col-sm-7">@Model.DeliveryAddress</dd>
+                        }
+
+                        <dt class="col-sm-5">Total:</dt>
+                        <dd class="col-sm-7">
+                            <strong class="text-primary fs-5">@Model.Total.ToString("C2")</strong>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+
+            @if (Model.Status != "Livrée" && Model.Status != "Annulée")
+            {
+                <div class="card shadow-sm">
+                    <div class="card-header bg-warning">
+                        <h5 class="mb-0"><i class="bi bi-gear"></i> Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <form asp-action="UpdateSaleStatus" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Changer le statut:</label>
+                                <select name="status" class="form-select">
+                                    <option value="En cours" selected="@(Model.Status == "En cours")">En cours</option>
+                                    <option value="En préparation" selected="@(Model.Status == "En préparation")">En préparation</option>
+                                    <option value="Expédiée" selected="@(Model.Status == "Expédiée")">Expédiée</option>
+                                    <option value="Livrée" selected="@(Model.Status == "Livrée")">Livrée</option>
+                                    <option value="Annulée" selected="@(Model.Status == "Annulée")">Annulée</option>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-check-circle"></i> Mettre à jour
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

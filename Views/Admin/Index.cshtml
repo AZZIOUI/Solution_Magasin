@@ -1,65 +1,258 @@
+@model Solution_Magasin.ViewModels.AdminStatisticsViewModel
+
 @{
-    ViewData["Title"] = "Administration";
+    ViewData["Title"] = "Tableau de Bord Administrateur";
 }
 
-<div class="container mt-4">
-    <h1 class="mb-4">@ViewData["Title"]</h1>
+<div class="container-fluid mt-4">
+    <h1 class="mb-4"><i class="bi bi-speedometer2"></i> @ViewData["Title"]</h1>
 
     @if (TempData["SuccessMessage"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["SuccessMessage"]
+            <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
 
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            <div class="card border-primary">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="bi bi-person-plus"></i> Créer un Employé
-                    </h5>
-                    <p class="card-text">Créez un nouveau compte employé avec un rôle spécifique.</p>
-                    <a asp-action="CreateEmployee" class="btn btn-primary">Créer un employé</a>
+    <!-- Statistiques principales -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-primary shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-people fs-1 text-primary"></i>
+                    <h3 class="mt-2">@Model.TotalUsers</h3>
+                    <p class="text-muted mb-0">Utilisateurs Totals</p>
+                    <hr />
+                    <small><i class="bi bi-person"></i> @Model.TotalClients Clients | <i class="bi bi-briefcase"></i> @Model.TotalEmployees Employés</small>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-6 mb-3">
-            <div class="card border-info">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="bi bi-people"></i> Gérer les Utilisateurs
-                    </h5>
-                    <p class="card-text">Consultez et gérez tous les utilisateurs du système.</p>
-                    <a asp-action="Users" class="btn btn-info">Voir les utilisateurs</a>
+        <div class="col-md-3 mb-3">
+            <div class="card border-success shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-box-seam fs-1 text-success"></i>
+                    <h3 class="mt-2">@Model.TotalProducts</h3>
+                    <p class="text-muted mb-0">Produits</p>
+                    <hr />
+                    <small><i class="bi bi-tags"></i> @Model.TotalCategories Catégories</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-info shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-truck fs-1 text-info"></i>
+                    <h3 class="mt-2">@Model.TotalSuppliers</h3>
+                    <p class="text-muted mb-0">Fournisseurs</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-warning shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-exclamation-triangle fs-1 text-warning"></i>
+                    <h3 class="mt-2">@Model.OutOfStockProducts</h3>
+                    <p class="text-muted mb-0">Ruptures de Stock</p>
+                    <hr />
+                    <small><i class="bi bi-info-circle"></i> @Model.LowStockProducts Stock Faible</small>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Statistiques Rapides</h5>
+    <!-- Statistiques de ventes -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-calendar-day"></i> Ventes Aujourd'hui</h5>
                 </div>
                 <div class="card-body">
                     <div class="row text-center">
-                        <div class="col-md-4">
-                            <h3 class="text-primary">@ViewBag.TotalUsers</h3>
-                            <p>Utilisateurs totaux</p>
+                        <div class="col-6">
+                            <h4 class="text-primary">@Model.TodaySales</h4>
+                            <p class="text-muted mb-0">Ventes</p>
                         </div>
-                        <div class="col-md-4">
-                            <h3 class="text-success">@ViewBag.TotalClients</h3>
-                            <p>Clients</p>
-                        </div>
-                        <div class="col-md-4">
-                            <h3 class="text-info">@ViewBag.TotalEmployees</h3>
-                            <p>Employés</p>
+                        <div class="col-6">
+                            <h4 class="text-success">@Model.TodayRevenue.ToString("C2")</h4>
+                            <p class="text-muted mb-0">Revenus</p>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-calendar-month"></i> Ventes ce Mois</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-primary">@Model.MonthSales</h4>
+                            <p class="text-muted mb-0">Ventes</p>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success">@Model.MonthRevenue.ToString("C2")</h4>
+                            <p class="text-muted mb-0">Revenus</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="bi bi-lightning"></i> Actions Rapides</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a asp-action="Products" class="btn btn-outline-primary w-100 p-3">
+                                <i class="bi bi-box-seam fs-3 d-block mb-2"></i>
+                                <strong>Gérer les Produits</strong>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a asp-action="Categories" class="btn btn-outline-success w-100 p-3">
+                                <i class="bi bi-tags fs-3 d-block mb-2"></i>
+                                <strong>Gérer les Catégories</strong>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a asp-action="Suppliers" class="btn btn-outline-info w-100 p-3">
+                                <i class="bi bi-truck fs-3 d-block mb-2"></i>
+                                <strong>Gérer les Fournisseurs</strong>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a asp-action="Stock" class="btn btn-outline-warning w-100 p-3">
+                                <i class="bi bi-boxes fs-3 d-block mb-2"></i>
+                                <strong>Gérer le Stock</strong>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a asp-action="CreateEmployee" class="btn btn-outline-secondary w-100 p-3">
+                                <i class="bi bi-person-plus fs-3 d-block mb-2"></i>
+                                <strong>Créer un Employé</strong>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a asp-action="Users" class="btn btn-outline-secondary w-100 p-3">
+                                <i class="bi bi-people fs-3 d-block mb-2"></i>
+                                <strong>Gérer les Utilisateurs</strong>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a asp-action="Purchases" class="btn btn-outline-secondary w-100 p-3">
+                                <i class="bi bi-cart-check fs-3 d-block mb-2"></i>
+                                <strong>Voir les Achats</strong>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a asp-action="Sales" class="btn btn-outline-secondary w-100 p-3">
+                                <i class="bi bi-bag-check fs-3 d-block mb-2"></i>
+                                <strong>Voir les Ventes</strong>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dernières ventes et alertes stock -->
+    <div class="row">
+        <div class="col-md-7">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Dernières Ventes</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.RecentSales.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Date</th>
+                                        <th>Client</th>
+                                        <th>Total</th>
+                                        <th>Statut</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var sale in Model.RecentSales)
+                                    {
+                                        <tr>
+                                            <td><a asp-action="SaleDetails" asp-route-id="@sale.Id">#@sale.Id</a></td>
+                                            <td>@(sale.SaleDate?.ToString("dd/MM HH:mm") ?? "-")</td>
+                                            <td>@sale.ClientName</td>
+                                            <td>@sale.Total.ToString("C2")</td>
+                                            <td><span class="badge bg-secondary">@sale.Status</span></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center mt-3">
+                            <a asp-action="Sales" class="btn btn-sm btn-outline-primary">Voir toutes les ventes</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center mb-0">Aucune vente récente</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card shadow-sm">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Alertes Stock</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.StockAlerts.Any())
+                    {
+                        <div class="list-group">
+                            @foreach (var stock in Model.StockAlerts.Take(8))
+                            {
+                                var badgeClass = stock.Quantity == 0 ? "danger" : "warning";
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>@stock.ProductName</strong><br />
+                                            <small class="text-muted">@stock.Reference</small>
+                                        </div>
+                                        <span class="badge bg-@badgeClass">@stock.Quantity</span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <div class="text-center mt-3">
+                            <a asp-action="Stock" class="btn btn-sm btn-outline-danger">Gérer le stock</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center mb-0">
+                            <i class="bi bi-check-circle text-success fs-1"></i><br />
+                            Aucune alerte stock
+                        </p>
+                    }
                 </div>
             </div>
         </div>

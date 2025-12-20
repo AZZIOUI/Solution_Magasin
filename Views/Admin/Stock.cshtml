@@ -1,0 +1,140 @@
+@model IEnumerable<Solution_Magasin.ViewModels.StockViewModel>
+
+@{
+    ViewData["Title"] = "Gestion du Stock";
+}
+
+<div class="container-fluid mt-4">
+    <h1 class="mb-4"><i class="bi bi-boxes"></i> @ViewData["Title"]</h1>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Statistiques rapides -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h6>Rupture de stock</h6>
+                    <h3>@Model.Count(s => s.Quantity == 0)</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning">
+                <div class="card-body">
+                    <h6>Stock faible</h6>
+                    <h3>@Model.Count(s => s.Quantity > 0 && s.Quantity <= s.MinQuantity)</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6>Stock normal</h6>
+                    <h3>@Model.Count(s => s.Quantity > s.MinQuantity)</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6>Total articles</h6>
+                    <h3>@Model.Count()</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped" id="stockTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Référence</th>
+                            <th>Produit</th>
+                            <th>Catégorie</th>
+                            <th>Quantité</th>
+                            <th>Qté Min.</th>
+                            <th>Statut</th>
+                            <th>Dernière MAJ</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var stock in Model)
+                        {
+                            var statusClass = stock.Quantity == 0 ? "danger" : stock.Quantity <= stock.MinQuantity ? "warning" : "success";
+                            <tr>
+                                <td><strong>@stock.Reference</strong></td>
+                                <td>@stock.ProductName</td>
+                                <td>
+                                    <span class="badge bg-info">@(stock.CategoryName ?? "-")</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-@statusClass">@stock.Quantity</span>
+                                </td>
+                                <td>@stock.MinQuantity</td>
+                                <td>
+                                    @if (stock.Quantity == 0)
+                                    {
+                                        <span class="badge bg-danger">
+                                            <i class="bi bi-x-circle"></i> Rupture de stock
+                                        </span>
+                                    }
+                                    else if (stock.Quantity <= stock.MinQuantity)
+                                    {
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="bi bi-exclamation-triangle"></i> Stock faible
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle"></i> Stock normal
+                                        </span>
+                                    }
+                                </td>
+                                <td>@(stock.LastUpdated?.ToString("dd/MM/yyyy HH:mm") ?? "-")</td>
+                                <td>
+                                    <a asp-action="EditStock" asp-route-id="@stock.Id" 
+                                       class="btn btn-sm btn-outline-primary" title="Modifier">
+                                        <i class="bi bi-pencil"></i> Modifier
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#stockTable').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/fr-FR.json'
+                },
+                order: [[3, 'asc']], // Trier par quantité
+                pageLength: 25
+            });
+        });
+    </script>
+}

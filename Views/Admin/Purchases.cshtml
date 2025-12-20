@@ -1,0 +1,68 @@
+@model IEnumerable<Solution_Magasin.ViewModels.PurchaseViewModel>
+
+@{
+    ViewData["Title"] = "Historique des Achats";
+}
+
+<div class="container-fluid mt-4">
+    <h1 class="mb-4"><i class="bi bi-cart-check"></i> @ViewData["Title"]</h1>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped" id="purchasesTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Fournisseur</th>
+                            <th>Nb. Articles</th>
+                            <th>Total</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var purchase in Model)
+                        {
+                            <tr>
+                                <td><strong>#@purchase.Id</strong></td>
+                                <td>@(purchase.PurchaseDate?.ToString("dd/MM/yyyy HH:mm") ?? "-")</td>
+                                <td>@purchase.SupplierName</td>
+                                <td>
+                                    <span class="badge bg-info">@purchase.ItemCount</span>
+                                </td>
+                                <td><strong>@purchase.Total.ToString("C2")</strong></td>
+                                <td>
+                                    <a asp-action="PurchaseDetails" asp-route-id="@purchase.Id" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i> Détails
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-secondary">
+                            <th colspan="4" class="text-end">Total Général:</th>
+                            <th colspan="2">@Model.Sum(p => p.Total).ToString("C2")</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#purchasesTable').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/fr-FR.json'
+                },
+                order: [[1, 'desc']], // Trier par date décroissante
+                pageLength: 25
+            });
+        });
+    </script>
+}

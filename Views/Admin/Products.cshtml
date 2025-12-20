@@ -34,6 +34,7 @@
                 <table class="table table-hover table-striped" id="productsTable">
                     <thead class="table-dark">
                         <tr>
+                            <th>Image</th>
                             <th>Référence</th>
                             <th>Nom</th>
                             <th>Désignation</th>
@@ -48,6 +49,24 @@
                         @foreach (var product in Model)
                         {
                             <tr>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(product.ImagePath))
+                                    {
+                                        <img src="@product.ImagePath" 
+                                             alt="@product.Name" 
+                                             class="img-thumbnail" 
+                                             style="width: 50px; height: 50px; object-fit: cover;" 
+                                             data-bs-toggle="tooltip" 
+                                             title="@product.Name" />
+                                    }
+                                    else
+                                    {
+                                        <div class="bg-secondary text-white d-flex align-items-center justify-content-center" 
+                                             style="width: 50px; height: 50px;">
+                                            <i class="bi bi-image"></i>
+                                        </div>
+                                    }
+                                </td>
                                 <td><strong>@product.Reference</strong></td>
                                 <td>@product.Name</td>
                                 <td>@(product.Designation ?? "-")</td>
@@ -93,7 +112,19 @@
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                 </div>
                                                 <div class="modal-body">
+                                                    @if (!string.IsNullOrEmpty(product.ImagePath))
+                                                    {
+                                                        <div class="text-center mb-3">
+                                                            <img src="@product.ImagePath" alt="@product.Name" class="img-thumbnail" style="max-width: 150px;" />
+                                                        </div>
+                                                    }
                                                     Êtes-vous sûr de vouloir supprimer le produit "<strong>@product.Name</strong>" ?
+                                                    @if (!string.IsNullOrEmpty(product.ImagePath))
+                                                    {
+                                                        <div class="alert alert-warning mt-3">
+                                                            <i class="bi bi-exclamation-triangle"></i> L'image associée sera également supprimée.
+                                                        </div>
+                                                    }
                                                 </div>
                                                 <div class="modal-footer">
                                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
@@ -118,12 +149,19 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
+            // Initialize DataTable
             $('#productsTable').DataTable({
                 language: {
                     url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/fr-FR.json'
                 },
-                order: [[0, 'asc']],
+                order: [[1, 'asc']], // Sort by reference
                 pageLength: 25
+            });
+
+            // Initialize Bootstrap tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
             });
         });
     </script>

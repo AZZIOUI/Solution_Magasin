@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace Solution_Magasin.ViewModels;
 
@@ -40,4 +41,10 @@ public class ProductViewModel
 
     [Display(Name = "Quantité en stock")]
     public int StockQuantity { get; set; }
+
+    [Display(Name = "Image actuelle")]
+    public string? ImagePath { get; set; }
+
+    [Display(Name = "Image du produit")]
+    public IFormFile? ImageFile { get; set; }
 }

@@ -15,6 +15,29 @@ namespace Solution_Magasin.Controllers
 
         public IActionResult Index()
         {
+            // Si l'utilisateur est connecté, rediriger vers son espace approprié
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                // Administrateur -> Tableau de bord admin
+                if (User.IsInRole("Administrateur"))
+                {
+                    return RedirectToAction("Index", "Admin");
+                }
+                
+                // Client -> Espace client
+                if (User.IsInRole("Client"))
+                {
+                    return RedirectToAction("Index", "Client");
+                }
+                
+                // Employé (ResponsableAchat ou Magasinier) -> Espace employé
+                if (User.IsInRole("ResponsableAchat") || User.IsInRole("Magasinier"))
+                {
+                    return RedirectToAction("Index", "Employee");
+                }
+            }
+
+            // Si non connecté ou aucun rôle reconnu, afficher la page d'accueil publique
             return View();
         }
 

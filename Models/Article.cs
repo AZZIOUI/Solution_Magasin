@@ -37,6 +37,11 @@ public partial class Article
     [Column("id_cat")]
     public int? IdCat { get; set; }
 
+    [Column("image_path")]
+    [StringLength(500)]
+    [Unicode(false)]
+    public string? ImagePath { get; set; }
+
     [InverseProperty("IdArticleNavigation")]
     public virtual ICollection<DetailAchat> DetailAchats { get; set; } = new List<DetailAchat>();
 

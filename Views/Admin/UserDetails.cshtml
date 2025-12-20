@@ -1,0 +1,164 @@
+@model Solution_Magasin.ViewModels.UserListViewModel
+
+@{
+    ViewData["Title"] = "Détails Utilisateur";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-person-circle"></i> Détails de l'Utilisateur
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-circle bg-primary text-white me-3" style="width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px;">
+                                    @Model.FirstName?.ToUpper().FirstOrDefault()@Model.LastName?.ToUpper().FirstOrDefault()
+                                </div>
+                                <div>
+                                    <h3 class="mb-1">@Model.FirstName @Model.LastName</h3>
+                                    <p class="text-muted mb-0">
+                                        @if (Model.IsActive)
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i> Actif
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">
+                                                <i class="bi bi-x-circle"></i> Inactif
+                                            </span>
+                                        }
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted small">Email</label>
+                            <div class="fw-bold">
+                                <i class="bi bi-envelope me-2"></i>@Model.Email
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted small">Type d'Utilisateur</label>
+                            <div>
+                                @if (Model.UserType == "Client")
+                                {
+                                    <span class="badge bg-success fs-6">
+                                        <i class="bi bi-person"></i> Client
+                                    </span>
+                                }
+                                else if (Model.UserType == "Employe")
+                                {
+                                    <span class="badge bg-primary fs-6">
+                                        <i class="bi bi-briefcase"></i> Employé
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label text-muted small">Rôle(s)</label>
+                            <div>
+                                @foreach (var role in Model.Roles.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                {
+                                    var badgeClass = role.Trim() switch
+                                    {
+                                        "Administrateur" => "bg-danger",
+                                        "ResponsableAchat" => "bg-warning text-dark",
+                                        "Magasinier" => "bg-info text-dark",
+                                        "Client" => "bg-success",
+                                        _ => "bg-secondary"
+                                    };
+                                    <span class="badge @badgeClass me-2 fs-6">@role.Trim()</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label text-muted small">Statut du Compte</label>
+                            <div>
+                                @if (Model.IsActive)
+                                {
+                                    <div class="alert alert-success mb-0">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        <strong>Compte Actif</strong> - L'utilisateur peut se connecter et accéder à ses fonctionnalités.
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-warning mb-0">
+                                        <i class="bi bi-exclamation-triangle-fill"></i>
+                                        <strong>Compte Désactivé</strong> - L'utilisateur ne peut pas se connecter.
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a asp-action="Users" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Retour à la liste
+                        </a>
+                        <div>
+                            @if (Model.IsActive)
+                            {
+                                <form asp-action="ToggleUserStatus" asp-route-id="@Model.Id" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-danger"
+                                            onclick="return confirm('Êtes-vous sûr de vouloir désactiver cet utilisateur ?');">
+                                        <i class="bi bi-lock"></i> Désactiver le Compte
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form asp-action="ToggleUserStatus" asp-route-id="@Model.Id" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-success"
+                                            onclick="return confirm('Êtes-vous sûr de vouloir activer cet utilisateur ?');">
+                                        <i class="bi bi-unlock"></i> Activer le Compte
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                    <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                    <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+        </div>
+    </div>
+</div>

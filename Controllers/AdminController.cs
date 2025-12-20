@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Solution_Magasin.Constants;
 using Solution_Magasin.Models;
+using Solution_Magasin.Services;
 using Solution_Magasin.ViewModels;
 
 namespace Solution_Magasin.Controllers;
@@ -20,17 +21,20 @@ public class AdminController : Controller
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly DotnetProjectContext _dbContext;
     private readonly ILogger<AdminController> _logger;
+    private readonly IImageUploadService _imageUploadService;
 
     public AdminController(
         UserManager<ApplicationUser> userManager,
         RoleManager<IdentityRole> roleManager,
         DotnetProjectContext dbContext,
-        ILogger<AdminController> logger)
+        ILogger<AdminController> logger,
+        IImageUploadService imageUploadService)
     {
         _userManager = userManager;
         _roleManager = roleManager;
         _dbContext = dbContext;
         _logger = logger;
+        _imageUploadService = imageUploadService;
     }
 
     /// <summary>
@@ -227,7 +231,8 @@ public class AdminController : Controller
                 DateAdded = a.DateAjout,
                 CategoryId = a.IdCat ?? 0,
                 CategoryName = a.IdCatNavigation != null ? a.IdCatNavigation.NomCat : "",
-                StockQuantity = a.Stocks.FirstOrDefault() != null ? a.Stocks.FirstOrDefault()!.QteDispo ?? 0 : 0
+                StockQuantity = a.Stocks.FirstOrDefault() != null ? a.Stocks.FirstOrDefault()!.QteDispo ?? 0 : 0,
+                ImagePath = a.ImagePath
             })
             .ToListAsync();
 
@@ -253,6 +258,28 @@ public class AdminController : Controller
     {
         if (ModelState.IsValid)
         {
+            // Upload image if provided
+            string? imagePath = null;
+            if (model.ImageFile != null)
+            {
+                if (_imageUploadService.IsValidImage(model.ImageFile))
+                {
+                    imagePath = await _imageUploadService.UploadImageAsync(model.ImageFile, "products");
+                    if (imagePath == null)
+                    {
+                        ModelState.AddModelError("ImageFile", "Erreur lors du téléchargement de l'image");
+                        ViewBag.Categories = new SelectList(await _dbContext.Categories.ToListAsync(), "IdCat", "NomCat");
+                        return View(model);
+                    }
+                }
+                else
+                {
+                    ModelState.AddModelError("ImageFile", "Format d'image invalide. Formats acceptés: JPG, PNG, GIF, WEBP (Max 5MB)");
+                    ViewBag.Categories = new SelectList(await _dbContext.Categories.ToListAsync(), "IdCat", "NomCat");
+                    return View(model);
+                }
+            }
+
             var article = new Article
             {
                 ReferenceArt = model.Reference,
@@ -260,7 +287,8 @@ public class AdminController : Controller
                 DesignationArt = model.Designation,
                 PrixUnit = model.UnitPrice,
                 DateAjout = DateOnly.FromDateTime(DateTime.Now),
-                IdCat = model.CategoryId
+                IdCat = model.CategoryId,
+                ImagePath = imagePath
             };
 
             _dbContext.Articles.Add(article);
@@ -311,7 +339,8 @@ public class AdminController : Controller
             Designation = article.DesignationArt,
             UnitPrice = article.PrixUnit ?? 0,
             DateAdded = article.DateAjout,
-            CategoryId = article.IdCat ?? 0
+            CategoryId = article.IdCat ?? 0,
+            ImagePath = article.ImagePath
         };
 
         ViewBag.Categories = new SelectList(await _dbContext.Categories.ToListAsync(), "IdCat", "NomCat", model.CategoryId);
@@ -332,6 +361,40 @@ public class AdminController : Controller
             {
                 TempData["ErrorMessage"] = "Produit non trouvé";
                 return RedirectToAction(nameof(Products));
+            }
+
+            // Handle image upload if new image provided
+            if (model.ImageFile != null)
+            {
+                if (_imageUploadService.IsValidImage(model.ImageFile))
+                {
+                    // Delete old image if exists
+                    if (!string.IsNullOrEmpty(article.ImagePath))
+                    {
+                        await _imageUploadService.DeleteImageAsync(article.ImagePath);
+                    }
+
+                    // Upload new image
+                    var imagePath = await _imageUploadService.UploadImageAsync(model.ImageFile, "products");
+                    if (imagePath != null)
+                    {
+                        article.ImagePath = imagePath;
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("ImageFile", "Erreur lors du téléchargement de l'image");
+                        ViewBag.Categories = new SelectList(await _dbContext.Categories.ToListAsync(), "IdCat", "NomCat", model.CategoryId);
+                        model.ImagePath = article.ImagePath; // Keep old path for display
+                        return View(model);
+                    }
+                }
+                else
+                {
+                    ModelState.AddModelError("ImageFile", "Format d'image invalide. Formats acceptés: JPG, PNG, GIF, WEBP (Max 5MB)");
+                    ViewBag.Categories = new SelectList(await _dbContext.Categories.ToListAsync(), "IdCat", "NomCat", model.CategoryId);
+                    model.ImagePath = article.ImagePath; // Keep old path for display
+                    return View(model);
+                }
             }
 
             article.ReferenceArt = model.Reference;
@@ -360,6 +423,10 @@ public class AdminController : Controller
         var article = await _dbContext.Articles
             .Include(a => a.DetailVentes)
             .Include(a => a.DetailAchats)
+            .Include(a => a.Stocks)
+            .Include(a => a.NotificationStocks)
+            .Include(a => a.Retours)
+            .Include(a => a.Reviews)
             .FirstOrDefaultAsync(a => a.IdArticle == id);
 
         if (article == null)
@@ -368,12 +435,46 @@ public class AdminController : Controller
             return RedirectToAction(nameof(Products));
         }
 
+        // Vérifier si le produit est référencé dans des transactions
         if (article.DetailVentes.Any() || article.DetailAchats.Any())
         {
             TempData["ErrorMessage"] = "Impossible de supprimer ce produit car il est référencé dans des ventes ou achats";
             return RedirectToAction(nameof(Products));
         }
 
+        // Vérifier si le produit a des retours
+        if (article.Retours.Any())
+        {
+            TempData["ErrorMessage"] = "Impossible de supprimer ce produit car il a des retours associés";
+            return RedirectToAction(nameof(Products));
+        }
+
+        // Supprimer les entités liées d'abord
+        // Supprimer les reviews
+        if (article.Reviews.Any())
+        {
+            _dbContext.Reviews.RemoveRange(article.Reviews);
+        }
+
+        // Supprimer les notifications de stock
+        if (article.NotificationStocks.Any())
+        {
+            _dbContext.NotificationStocks.RemoveRange(article.NotificationStocks);
+        }
+
+        // Supprimer les entrées de stock
+        if (article.Stocks.Any())
+        {
+            _dbContext.Stocks.RemoveRange(article.Stocks);
+        }
+
+        // Supprimer l'image si elle existe
+        if (!string.IsNullOrEmpty(article.ImagePath))
+        {
+            await _imageUploadService.DeleteImageAsync(article.ImagePath);
+        }
+
+        // Supprimer l'article
         _dbContext.Articles.Remove(article);
         await _dbContext.SaveChangesAsync();
 
@@ -915,6 +1016,77 @@ public class AdminController : Controller
 
         TempData["SuccessMessage"] = $"Statut de la vente mis à jour: {status}";
         return RedirectToAction(nameof(SaleDetails), new { id });
+    }
+
+    #endregion
+
+    #region Gestion Avancée des Utilisateurs
+
+    /// <summary>
+    /// Affiche les détails d'un utilisateur
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> UserDetails(string id)
+    {
+        var user = await _userManager.FindByIdAsync(id);
+        if (user == null)
+        {
+            TempData["ErrorMessage"] = "Utilisateur non trouvé";
+            return RedirectToAction(nameof(Users));
+        }
+
+        var roles = await _userManager.GetRolesAsync(user);
+        var model = new UserListViewModel
+        {
+            Id = user.Id,
+            Email = user.Email ?? "",
+            FirstName = user.FirstName ?? "",
+            LastName = user.LastName ?? "",
+            UserType = user.UserType ?? "",
+            IsActive = user.IsActive,
+            Roles = string.Join(", ", roles)
+        };
+
+        return View(model);
+    }
+
+    /// <summary>
+    /// Bascule le statut actif/inactif d'un utilisateur
+    /// </summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ToggleUserStatus(string id)
+    {
+        var user = await _userManager.FindByIdAsync(id);
+        if (user == null)
+        {
+            TempData["ErrorMessage"] = "Utilisateur non trouvé";
+            return RedirectToAction(nameof(Users));
+        }
+
+        // Ne pas désactiver l'administrateur en cours
+        if (user.Id == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
+        {
+            TempData["ErrorMessage"] = "Vous ne pouvez pas désactiver votre propre compte";
+            return RedirectToAction(nameof(Users));
+        }
+
+        user.IsActive = !user.IsActive;
+        var result = await _userManager.UpdateAsync(user);
+
+        if (result.Succeeded)
+        {
+            var statusText = user.IsActive ? "activé" : "désactivé";
+            TempData["SuccessMessage"] = $"Utilisateur {user.Email} {statusText} avec succès";
+            _logger.LogInformation("Utilisateur {Email} {Status} par l'administrateur {Admin}", 
+                user.Email, statusText, User.Identity?.Name);
+        }
+        else
+        {
+            TempData["ErrorMessage"] = "Erreur lors de la mise à jour du statut";
+        }
+
+        return RedirectToAction(nameof(Users));
     }
 
     #endregion

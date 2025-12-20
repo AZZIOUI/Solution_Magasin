@@ -83,8 +83,9 @@ namespace Solution_Magasin
                     policy.RequireRole(RoleConstants.Magasinier));
             });
 
-            // Enregistrer le service de seeding
+            // Enregistrer les services
             builder.Services.AddScoped<DatabaseSeeder>();
+            builder.Services.AddScoped<IImageUploadService, ImageUploadService>();
 
             var app = builder.Build();
 
@@ -104,6 +105,10 @@ namespace Solution_Magasin
             }
 
             app.UseHttpsRedirection();
+            
+            // Enable static files middleware for serving images from wwwroot
+            app.UseStaticFiles();
+            
             app.UseRouting();
 
             app.UseAuthentication();

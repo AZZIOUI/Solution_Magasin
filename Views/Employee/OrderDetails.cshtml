@@ -1,0 +1,278 @@
+@model Solution_Magasin.ViewModels.EmployeeOrderViewModel
+@{
+    ViewData["Title"] = $"Commande #{Model.IdVente}";
+}
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Espace Employé</a></li>
+            <li class="breadcrumb-item"><a asp-action="Orders">Commandes</a></li>
+            <li class="breadcrumb-item active">Commande #@Model.IdVente</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="bi bi-box-seam"></i> Commande #CMD-@Model.IdVente.ToString("D6")</h4>
+                        <span class="badge @(Model.Status switch {
+                            "En traitement" => "bg-warning",
+                            "En préparation" => "bg-info",
+                            "Prête" => "bg-primary",
+                            "Expédiée" => "bg-success",
+                            "Livrée" => "bg-success",
+                            _ => "bg-secondary"
+                        }) fs-6">
+                            @Model.Status
+                        </span>
+                    </div>
+                    <small class="text-muted">Passée le @Model.DateVente?.ToString("dd MMMM yyyy à HH:mm")</small>
+                </div>
+                <div class="card-body">
+                    <h6 class="mb-3"><i class="bi bi-box"></i> Articles à préparer</h6>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Produit</th>
+                                    <th>Quantité</th>
+                                    <th>Stock Dispo</th>
+                                    <th class="text-end">Prix</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                @if (!string.IsNullOrEmpty(item.ImagePath))
+                                                {
+                                                    <img src="@item.ImagePath" alt="@item.ProductName" 
+                                                         class="me-3 rounded" style="width: 60px; height: 60px; object-fit: cover;">
+                                                }
+                                                else
+                                                {
+                                                    <div class="bg-secondary text-white d-flex align-items-center justify-content-center me-3 rounded" 
+                                                         style="width: 60px; height: 60px;">
+                                                        <i class="bi bi-image"></i>
+                                                    </div>
+                                                }
+                                                <div>
+                                                    <strong>@item.ProductName</strong><br>
+                                                    <small class="text-muted">Réf: @item.ProductReference</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="align-middle">
+                                            <span class="badge bg-primary">@item.Quantity</span>
+                                        </td>
+                                        <td class="align-middle">
+                                            @if (item.StockAvailable >= item.Quantity)
+                                            {
+                                                <span class="badge bg-success">@item.StockAvailable disponible</span>
+                                            }
+                                            else if (item.StockAvailable > 0)
+                                            {
+                                                <span class="badge bg-warning">@item.StockAvailable disponible</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger">Rupture de stock</span>
+                                            }
+                                        </td>
+                                        <td class="align-middle text-end">
+                                            <strong>@item.Subtotal.ToString("N2") DH</strong>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <a asp-action="Orders" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left"></i> Retour aux commandes
+                </a>
+                <button type="button" class="btn btn-outline-secondary" onclick="window.print()">
+                    <i class="bi bi-printer"></i> Imprimer
+                </button>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Client Information -->
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="bi bi-person"></i> Informations Client</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        <strong>Nom:</strong><br>
+                        @Model.ClientName
+                    </p>
+                    <p class="mb-2">
+                        <strong>Email:</strong><br>
+                        <a href="mailto:@Model.ClientEmail">@Model.ClientEmail</a>
+                    </p>
+                    <p class="mb-0">
+                        <strong>Téléphone:</strong><br>
+                        <a href="tel:@Model.ClientPhone">
+                            <i class="bi bi-telephone"></i> @Model.ClientPhone
+                        </a>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Delivery Address -->
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="bi bi-geo-alt"></i> Adresse de Livraison</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">@Model.AdresseLiv</p>
+                </div>
+            </div>
+
+            <!-- Payment Info -->
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="bi bi-credit-card"></i> Paiement</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        <strong>Méthode:</strong><br>
+                        @Model.PaymentMethod
+                    </p>
+                    <p class="mb-0">
+                        <strong>Statut:</strong><br>
+                        <span class="badge @(Model.PaymentStatus == "Payé" ? "bg-success" : "bg-warning")">
+                            @Model.PaymentStatus
+                        </span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Summary -->
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="bi bi-calculator"></i> Récapitulatif</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Sous-total:</span>
+                        <strong>@Model.Items.Sum(i => i.Subtotal).ToString("N2") DH</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Frais de livraison:</span>
+                        <strong>50.00 DH</strong>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <span class="h6">Total:</span>
+                        <strong class="h6 text-primary">@Model.TotalV?.ToString("N2") DH</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Update Status -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="bi bi-arrow-repeat"></i> Changer le Statut</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        @if (Model.Status == "En traitement")
+                        {
+                            <button type="button" class="btn btn-info" onclick="updateStatus(@Model.IdVente, 'En préparation')">
+                                <i class="bi bi-box-seam"></i> Commencer la préparation
+                            </button>
+                        }
+                        @if (Model.Status == "En préparation")
+                        {
+                            <button type="button" class="btn btn-primary" onclick="updateStatus(@Model.IdVente, 'Prête')">
+                                <i class="bi bi-check-circle"></i> Marquer comme Prête
+                            </button>
+                        }
+                        @if (Model.Status == "Prête")
+                        {
+                            <button type="button" class="btn btn-success" onclick="updateStatus(@Model.IdVente, 'Expédiée')">
+                                <i class="bi bi-truck"></i> Marquer comme Expédiée
+                            </button>
+                        }
+                        @if (Model.Status == "Expédiée")
+                        {
+                            <button type="button" class="btn btn-success" onclick="updateStatus(@Model.IdVente, 'Livrée')">
+                                <i class="bi bi-check-all"></i> Marquer comme Livrée
+                            </button>
+                        }
+                        
+                        <button type="button" class="btn btn-outline-secondary" onclick="showAllStatuses()">
+                            <i class="bi bi-list"></i> Tous les statuts
+                        </button>
+                    </div>
+                    
+                    <!-- All statuses modal trigger hidden by default -->
+                    <div id="allStatusesButtons" style="display:none;" class="mt-3">
+                        <select id="statusSelect" class="form-select mb-2">
+                            <option value="En traitement">En traitement</option>
+                            <option value="En préparation">En préparation</option>
+                            <option value="Prête">Prête</option>
+                            <option value="Expédiée">Expédiée</option>
+                            <option value="Livrée">Livrée</option>
+                        </select>
+                        <button type="button" class="btn btn-primary w-100" onclick="updateStatusFromSelect(@Model.IdVente)">
+                            Mettre à jour
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function showAllStatuses() {
+            $('#allStatusesButtons').slideToggle();
+        }
+        
+        function updateStatus(orderId, newStatus) {
+            if (confirm(`Changer le statut de la commande à "${newStatus}" ?`)) {
+                $.post('@Url.Action("UpdateOrderStatus")', {
+                    id: orderId,
+                    newStatus: newStatus,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                })
+                .done(function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert(response.message);
+                    }
+                })
+                .fail(function() {
+                    alert('Une erreur est survenue');
+                });
+            }
+        }
+        
+        function updateStatusFromSelect(orderId) {
+            var newStatus = $('#statusSelect').val();
+            updateStatus(orderId, newStatus);
+        }
+    </script>
+}
+
+<style media="print">
+    nav, .btn, footer, header, .card:last-child { display: none !important; }
+    .container { max-width: 100% !important; }
+</style>
+
+<!-- Hidden CSRF token for AJAX requests -->
+@Html.AntiForgeryToken()

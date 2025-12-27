@@ -1,0 +1,115 @@
+@model Solution_Magasin.ViewModels.AdminReturnViewModel
+@{
+    ViewData["Title"] = "Détails du Retour";
+}
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Administration</a></li>
+            <li class="breadcrumb-item"><a asp-action="Returns">Retours</a></li>
+            <li class="breadcrumb-item active">Détails</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0"><i class="bi bi-arrow-return-left"></i> Détails du Retour #@Model.IdRetour</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p><strong>Date de retour :</strong> @Model.DateRetour?.ToString("dd/MM/yyyy HH:mm")</p>
+                            <p><strong>Commande :</strong> @Model.OrderNumber</p>
+                            <p><strong>Date de commande :</strong> @Model.OrderDate?.ToString("dd/MM/yyyy")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Statut :</strong> <span class="badge bg-warning text-dark">@Model.Status</span></p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h5 class="mb-3">Informations Client</h5>
+                    <div class="p-3 bg-light rounded mb-4">
+                        <p class="mb-1"><strong>Nom :</strong> @Model.ClientName</p>
+                        <p class="mb-1"><strong>Email :</strong> @Model.ClientEmail</p>
+                        @if (!string.IsNullOrEmpty(Model.ClientPhone))
+                        {
+                            <p class="mb-0"><strong>Téléphone :</strong> @Model.ClientPhone</p>
+                        }
+                    </div>
+
+                    <h5 class="mb-3">Produit concerné</h5>
+                    <div class="product-info p-3 bg-light rounded mb-4">
+                        <div class="d-flex align-items-center">
+                            @if (!string.IsNullOrEmpty(Model.ProductImage))
+                            {
+                                <img src="@Model.ProductImage" alt="@Model.ProductName" 
+                                     class="img-thumbnail me-3" style="width: 120px; height: 120px; object-fit: cover;">
+                            }
+                            else
+                            {
+                                <div class="bg-white d-flex align-items-center justify-content-center me-3" 
+                                     style="width: 120px; height: 120px; border: 1px solid #ddd;">
+                                    <i class="bi bi-image" style="font-size: 3rem; color: #ccc;"></i>
+                                </div>
+                            }
+                            <div>
+                                <h5 class="mb-1">@Model.ProductName</h5>
+                                <p class="mb-1 text-muted">Réf: @Model.ProductReference</p>
+                                <p class="mb-0"><strong>Prix :</strong> @Model.ProductPrice?.ToString("F2") DH</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 class="mb-3">Motif du retour</h5>
+                    <div class="alert alert-secondary">
+                        <p class="mb-0">@Model.Motif</p>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a asp-action="Returns" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Retour à la liste
+                        </a>
+                        <div>
+                            <a asp-action="SaleDetails" asp-route-id="@Model.IdVente" class="btn btn-outline-primary me-2">
+                                <i class="bi bi-receipt"></i> Voir la commande
+                            </a>
+                            <form asp-action="DeleteReturn" method="post" class="d-inline"
+                                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce retour ?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@Model.IdRetour" />
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="bi bi-trash"></i> Supprimer
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="mailto:@Model.ClientEmail?subject=Demande de retour #@Model.IdRetour" 
+                           class="btn btn-outline-primary">
+                            <i class="bi bi-envelope"></i> Contacter le client
+                        </a>
+                        <a asp-action="EditProduct" asp-route-id="@Model.IdArticle" 
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-box-seam"></i> Voir le produit
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

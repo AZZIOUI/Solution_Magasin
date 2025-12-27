@@ -16,7 +16,7 @@
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
-                    <i class="bi bi-shop"></i> Solution_Magasin
+                    <i class="bi bi-shop"></i> Z-W COMMERCE
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
@@ -46,10 +46,29 @@
                                         <i class="bi bi-cart"></i> Panier
                                     </a>
                                 </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Client" asp-action="MyOrders">
-                                        <i class="bi bi-bag-check"></i> Mes Commandes
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-dark" href="#" id="clientDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-person-badge"></i> Mon Espace
                                     </a>
+                                    <ul class="dropdown-menu" aria-labelledby="clientDropdown">
+                                        <li><a class="dropdown-item" asp-controller="Client" asp-action="Index">
+                                            <i class="bi bi-house-door"></i> Tableau de Bord
+                                        </a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" asp-controller="Client" asp-action="MyOrders">
+                                            <i class="bi bi-bag-check"></i> Mes Commandes
+                                        </a></li>
+                                        <li><a class="dropdown-item" asp-controller="Client" asp-action="MyReturns">
+                                            <i class="bi bi-arrow-return-left"></i> Mes Retours
+                                        </a></li>
+                                        <li><a class="dropdown-item" asp-controller="Client" asp-action="MyReviews">
+                                            <i class="bi bi-star"></i> Mes Avis
+                                        </a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" asp-controller="Client" asp-action="Profile">
+                                            <i class="bi bi-person"></i> Mon Profil
+                                        </a></li>
+                                    </ul>
                                 </li>
                             }
                             
@@ -86,6 +105,17 @@
                                             <i class="bi bi-bag-check"></i> Ventes
                                         </a></li>
                                         <li><hr class="dropdown-divider"></li>
+                                        <li><h6 class="dropdown-header">Service Client</h6></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Returns">
+                                            <i class="bi bi-arrow-return-left"></i> Retours
+                                        </a></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Reviews">
+                                            <i class="bi bi-star"></i> Avis Clients
+                                        </a></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Invoices">
+                                            <i class="bi bi-file-earmark-text"></i> Factures
+                                        </a></li>
+                                        <li><hr class="dropdown-divider"></li>
                                         <li><h6 class="dropdown-header">Gestion des Utilisateurs</h6></li>
                                         <li><a class="dropdown-item" asp-controller="Admin" asp-action="Users">
                                             <i class="bi bi-people"></i> Utilisateurs
@@ -107,7 +137,7 @@
                                             <i class="bi bi-house-door"></i> Tableau de Bord
                                         </a></li>
                                         <li><hr class="dropdown-divider"></li>
-                                        @if (User.IsInRole("Administrateur") || User.IsInRole("Magasinier") || User.IsInRole("ResponsableAchat"))
+                                        @if (User.IsInRole("Administrateur") || User.IsInRole("Magasinier"))
                                         {
                                             <li><h6 class="dropdown-header">Gestion des Stocks</h6></li>
                                             <li><a class="dropdown-item" asp-controller="Employee" asp-action="StockManagement">
@@ -115,6 +145,14 @@
                                             </a></li>
                                             <li><a class="dropdown-item" asp-controller="Employee" asp-action="StockNotifications">
                                                 <i class="bi bi-bell"></i> Notifications
+                                            </a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                        }
+                                        @if (User.IsInRole("Administrateur") || User.IsInRole("Magasinier"))
+                                        {
+                                            <li><h6 class="dropdown-header">Gestion des Commandes</h6></li>
+                                            <li><a class="dropdown-item" asp-controller="Employee" asp-action="Orders">
+                                                <i class="bi bi-box-seam"></i> Voir les Commandes
                                             </a></li>
                                             <li><hr class="dropdown-divider"></li>
                                         }
@@ -193,7 +231,9 @@
 
     <footer class="border-top footer text-muted mt-5">
         <div class="container">
-            &copy; 2025 - Solution_Magasin - <a asp-area="" asp-controller="Home" asp-action="Privacy">Confidentialité</a>
+            &copy; 2025 - Z-W COMMERCE - <a asp-area="" asp-controller="Home" asp-action="Privacy">Confidentialité</a>
+            <br />
+            <small>By: Zakaria AZZIOUI & Walid NASSER - 4IIR4</small>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

@@ -1,0 +1,72 @@
+@model Solution_Magasin.ViewModels.RequestReturnViewModel
+@{
+    ViewData["Title"] = "Demander un retour";
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-arrow-return-left"></i> Demander un retour</h4>
+                </div>
+                <div class="card-body">
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <div class="product-info mb-4 p-3 bg-light rounded">
+                        <div class="d-flex align-items-center">
+                            @if (!string.IsNullOrEmpty(Model.ProductImage))
+                            {
+                                <img src="@Model.ProductImage" alt="@Model.ProductName" 
+                                     class="img-thumbnail me-3" style="width: 100px; height: 100px; object-fit: cover;">
+                            }
+                            <div>
+                                <h5 class="mb-1">@Model.ProductName</h5>
+                                <p class="mb-1"><strong>Prix :</strong> @Model.ProductPrice?.ToString("F2") DH</p>
+                                <p class="mb-0"><strong>Quantité achetée :</strong> @Model.QuantityPurchased</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form asp-action="RequestReturn" method="post">
+                        <input type="hidden" asp-for="IdArticle" />
+                        <input type="hidden" asp-for="IdVente" />
+
+                        <div class="mb-3">
+                            <label asp-for="Motif" class="form-label">Motif du retour <span class="text-danger">*</span></label>
+                            <textarea asp-for="Motif" class="form-control" rows="5" 
+                                      placeholder="Veuillez expliquer la raison de votre demande de retour (produit défectueux, non conforme, etc.)"></textarea>
+                            <span asp-validation-for="Motif" class="text-danger"></span>
+                            <div class="form-text">Minimum 10 caractères, maximum 200 caractères</div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            <strong>Important :</strong> Votre demande de retour sera examinée dans les plus brefs délais. 
+                            Vous recevrez une notification par email une fois la demande traitée.
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="OrderDetails" asp-route-id="@Model.IdVente" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Retour à la commande
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send"></i> Envoyer la demande
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang='fr'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Facture</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .company-name { font-size: 24px; font-weight: bold; color: #333; }
+        .invoice-title { font-size: 32px; font-weight: bold; color: #0066cc; margin: 20px 0; }
+        .info-section { margin: 20px 0; }
+        .info-row { display: flex; justify-content: space-between; margin: 10px 0; }
+        .info-label { font-weight: bold; color: #666; }
+        table { width: 100%; border-collapse: collapse; margin: 30px 0; }
+        th { background-color: #0066cc; color: white; padding: 12px; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #ddd; }
+        .total-section { text-align: right; margin-top: 30px; }
+        .total-row { font-size: 18px; margin: 10px 0; }
+        .total-amount { font-size: 24px; font-weight: bold; color: #0066cc; }
+        .footer { margin-top: 50px; text-align: center; color: #666; font-size: 12px; }
+        @media print {
+            body { margin: 20px; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class='header'>
+        <div class='company-name'>AZZIOUI MAGASIN</div>
+        <div class='invoice-title'>FACTURE</div>
+    </div>
+    <div class='info-section'>
+        <div class='info-row'>
+            <div><span class='info-label'>Numéro de facture:</span> INV-000001</div>
+            <div><span class='info-label'>Date:</span> 24/12/2025</div>
+        </div>
+        <div class='info-row'>
+            <div><span class='info-label'>Client:</span> Zakaria  AZZIOUI</div>
+            <div><span class='info-label'>Statut:</span> En préparation</div>
+        </div>
+        <div class='info-row'>
+            <div><span class='info-label'>Email:</span> azzioui04@gmail.com</div>
+            <div><span class='info-label'>Téléphone:</span> 0612121212</div>
+        </div>
+        <div class='info-row'>
+            <div><span class='info-label'>Adresse de livraison:</span> NO 69 LOT ATLAS MARJANE 01</div>
+            <div><span class='info-label'>Méthode de paiement:</span> Carte bancaire</div>
+        </div>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Référence</th>
+                <th>Produit</th>
+                <th>Quantité</th>
+                <th>Prix unitaire</th>
+                <th>Montant</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>pchh</td>
+                <td>dell</td>
+                <td>1</td>
+                <td>2500,00 DH</td>
+                <td>2500,00 DH</td>
+            </tr>
+        </tbody>
+    </table>
+    <div class='total-section'>
+        <div class='total-row'><span class='info-label'>Sous-total:</span> 2550,00 DH</div>
+        <div class='total-row'><span class='info-label'>TVA (20%):</span> 510,00 DH</div>
+        <div class='total-row total-amount'><span class='info-label'>TOTAL:</span> 3060,00 DH</div>
+    </div>
+    <div class='footer'>
+        <p>Merci pour votre achat!</p>
+        <p>AZZIOUI MAGASIN - Votre magasin de confiance</p>
+    </div>
+    <div class='no-print' style='text-align: center; margin-top: 30px;'>
+        <button onclick='window.print()' style='padding: 10px 20px; background-color: #0066cc; color: white; border: none; border-radius: 5px; cursor: pointer;'>Imprimer</button>
+    </div>
+</body>
+</html>

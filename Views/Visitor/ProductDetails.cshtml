@@ -22,7 +22,7 @@
             <div class="card border-0 shadow-sm">
                 @if (!string.IsNullOrEmpty(Model.ImagePath))
                 {
-                    <img src="~/@Model.ImagePath" class="card-img-top" alt="@Model.NomArt" style="max-height: 400px; object-fit: contain;">
+                    <img src="@Model.ImagePath" class="card-img-top" alt="@Model.NomArt" style="max-height: 400px; object-fit: contain;">
                 }
                 else
                 {
@@ -181,7 +181,7 @@
                             <div class="card h-100 border-0 shadow-sm">
                                 @if (!string.IsNullOrEmpty(product.ImagePath))
                                 {
-                                    <img src="~/@product.ImagePath" class="card-img-top" alt="@product.NomArt" style="height: 150px; object-fit: cover;">
+                                    <img src="@product.ImagePath" class="card-img-top" alt="@product.NomArt" style="height: 150px; object-fit: cover;">
                                 }
                                 else
                                 {

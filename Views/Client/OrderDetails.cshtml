@@ -34,6 +34,7 @@
                                     <th>Prix unitaire</th>
                                     <th>Quantité</th>
                                     <th class="text-end">Total</th>
+                                    <th class="text-center no-print">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -44,7 +45,7 @@
                                             <div class="d-flex align-items-center">
                                                 @if (!string.IsNullOrEmpty(item.ImagePath))
                                                 {
-                                                    <img src="~/@item.ImagePath" alt="@item.ProductName" class="me-3 rounded" style="width: 60px; height: 60px; object-fit: cover;">
+                                                    <img src="@item.ImagePath" alt="@item.ProductName" class="me-3 rounded" style="width: 60px; height: 60px; object-fit: cover;">
                                                 }
                                                 else
                                                 {
@@ -63,6 +64,22 @@
                                         <td class="align-middle text-end">
                                             <strong>@item.TotalPrice.ToString("N2") DH</strong>
                                         </td>
+                                        <td class="align-middle text-center no-print">
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <button type="button" class="btn btn-outline-primary btn-review" 
+                                                        data-article-id="@item.IdArticle"
+                                                        data-article-name="@item.ProductName"
+                                                        data-article-image="@item.ImagePath">
+                                                    <i class="bi bi-star"></i> Avis
+                                                </button>
+                                                <a asp-action="RequestReturn" 
+                                                   asp-route-orderId="@Model.IdVente" 
+                                                   asp-route-articleId="@item.IdArticle"
+                                                   class="btn btn-outline-warning">
+                                                    <i class="bi bi-arrow-return-left"></i> Retour
+                                                </a>
+                                            </div>
+                                        </td>
                                     </tr>
                                 }
                             </tbody>
@@ -71,13 +88,17 @@
                 </div>
             </div>
 
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2 no-print">
                 <a asp-action="MyOrders" class="btn btn-outline-primary">
                     <i class="bi bi-arrow-left"></i> Retour aux commandes
                 </a>
                 <button onclick="window.print()" class="btn btn-outline-secondary">
                     <i class="bi bi-printer"></i> Imprimer
                 </button>
+                <a asp-action="ViewInvoice" asp-route-orderId="@Model.IdVente" 
+                   class="btn btn-success" target="_blank">
+                    <i class="bi bi-file-earmark-pdf"></i> Télécharger la facture
+                </a>
             </div>
         </div>
 
@@ -145,7 +166,142 @@
     </div>
 </div>
 
+<!-- Review Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Laisser un avis</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="review-product-info" class="mb-3 p-2 bg-light rounded">
+                    <div class="d-flex align-items-center">
+                        <img id="review-product-image" src="" alt="" class="me-2 rounded" style="width: 50px; height: 50px; object-fit: cover;">
+                        <strong id="review-product-name"></strong>
+                    </div>
+                </div>
+                <form id="reviewForm">
+                    <input type="hidden" id="review-article-id" name="IdArticle">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Note <span class="text-danger">*</span></label>
+                        <div class="rating-stars">
+                            <i class="bi bi-star rating-star" data-rating="1"></i>
+                            <i class="bi bi-star rating-star" data-rating="2"></i>
+                            <i class="bi bi-star rating-star" data-rating="3"></i>
+                            <i class="bi bi-star rating-star" data-rating="4"></i>
+                            <i class="bi bi-star rating-star" data-rating="5"></i>
+                        </div>
+                        <input type="hidden" id="review-rating" name="Rating" value="0">
+                        <div class="text-danger" id="rating-error" style="display:none;">Veuillez sélectionner une note</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="review-comment" class="form-label">Commentaire <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="review-comment" name="Comment" rows="4" 
+                                  placeholder="Partagez votre expérience avec ce produit..." required></textarea>
+                        <div class="form-text">Minimum 10 caractères, maximum 300 caractères</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="submit-review">Publier l'avis</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style media="print">
-    nav, .btn, footer, header { display: none !important; }
+    nav, .btn, footer, header, .no-print { display: none !important; }
     .container { max-width: 100% !important; }
 </style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            var reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
+            
+            // Open review modal
+            $('.btn-review').click(function() {
+                var articleId = $(this).data('article-id');
+                var articleName = $(this).data('article-name');
+                var articleImage = $(this).data('article-image');
+                
+                $('#review-article-id').val(articleId);
+                $('#review-product-name').text(articleName);
+                $('#review-product-image').attr('src', articleImage || '/images/placeholder.jpg');
+                $('#review-rating').val(0);
+                $('#review-comment').val('');
+                $('.rating-star').removeClass('bi-star-fill').addClass('bi-star');
+                
+                reviewModal.show();
+            });
+            
+            // Rating stars
+            $('.rating-star').click(function() {
+                var rating = $(this).data('rating');
+                $('#review-rating').val(rating);
+                $('#rating-error').hide();
+                
+                $('.rating-star').each(function(index) {
+                    if (index < rating) {
+                        $(this).removeClass('bi-star').addClass('bi-star-fill');
+                    } else {
+                        $(this).removeClass('bi-star-fill').addClass('bi-star');
+                    }
+                });
+            });
+            
+            // Submit review
+            $('#submit-review').click(function() {
+                var rating = $('#review-rating').val();
+                var comment = $('#review-comment').val();
+                var articleId = $('#review-article-id').val();
+                
+                if (rating == 0) {
+                    $('#rating-error').show();
+                    return;
+                }
+                
+                if (comment.length < 10) {
+                    alert('Le commentaire doit contenir au moins 10 caractères');
+                    return;
+                }
+                
+                $.post('@Url.Action("AddReview", "Client")', {
+                    IdArticle: articleId,
+                    Rating: rating,
+                    Comment: comment,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                })
+                .done(function(response) {
+                    if (response.success) {
+                        reviewModal.hide();
+                        alert(response.message);
+                    } else {
+                        alert(response.message);
+                    }
+                })
+                .fail(function() {
+                    alert('Une erreur est survenue');
+                });
+            });
+        });
+    </script>
+    
+    <style>
+        .rating-stars {
+            font-size: 2rem;
+            color: #ffc107;
+        }
+        .rating-star {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .rating-star:hover {
+            transform: scale(1.2);
+        }
+    </style>
+}

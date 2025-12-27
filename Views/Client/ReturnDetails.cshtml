@@ -1,0 +1,73 @@
+@model Solution_Magasin.ViewModels.RetourViewModel
+@{
+    ViewData["Title"] = "Détails du retour";
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-arrow-return-left"></i> Détails du retour</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p><strong>Date de retour :</strong> @Model.DateRetour?.ToString("dd/MM/yyyy HH:mm")</p>
+                            <p><strong>Commande :</strong> @Model.OrderNumber</p>
+                            <p><strong>Date de commande :</strong> @Model.OrderDate?.ToString("dd/MM/yyyy")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Statut :</strong> <span class="badge bg-warning text-dark">@Model.Status</span></p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h5 class="mb-3">Produit concerné</h5>
+                    <div class="product-info p-3 bg-light rounded mb-4">
+                        <div class="d-flex align-items-center">
+                            @if (!string.IsNullOrEmpty(Model.ProductImage))
+                            {
+                                <img src="@Model.ProductImage" alt="@Model.ProductName" 
+                                     class="img-thumbnail me-3" style="width: 120px; height: 120px; object-fit: cover;">
+                            }
+                            else
+                            {
+                                <div class="bg-white d-flex align-items-center justify-content-center me-3" 
+                                     style="width: 120px; height: 120px; border: 1px solid #ddd;">
+                                    <i class="bi bi-image" style="font-size: 3rem; color: #ccc;"></i>
+                                </div>
+                            }
+                            <div>
+                                <h5 class="mb-1">@Model.ProductName</h5>
+                                <p class="mb-1 text-muted">Réf: @Model.ProductReference</p>
+                                <p class="mb-0"><strong>Prix :</strong> @Model.ProductPrice?.ToString("F2") DH</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 class="mb-3">Motif du retour</h5>
+                    <div class="alert alert-secondary">
+                        <p class="mb-0">@Model.Motif</p>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Information :</strong> Votre demande de retour est en cours de traitement. 
+                        Nous vous contacterons par email pour les prochaines étapes.
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a asp-action="MyReturns" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Retour à la liste
+                        </a>
+                        <a asp-action="OrderDetails" asp-route-id="@Model.IdVente" class="btn btn-outline-primary">
+                            <i class="bi bi-receipt"></i> Voir la commande
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1020,6 +1020,186 @@ public class AdminController : Controller
 
     #endregion
 
+    #region Gestion des Retours (Admin)
+
+    /// <summary>
+    /// Liste tous les retours de produits
+    /// </summary>
+    public async Task<IActionResult> Returns()
+    {
+        var returns = await _dbContext.Retours
+            .Include(r => r.IdArticleNavigation)
+            .Include(r => r.IdVenteNavigation)
+                .ThenInclude(v => v.IdClientNavigation)
+            .OrderByDescending(r => r.DateRetour)
+            .Select(r => new AdminReturnViewModel
+            {
+                IdRetour = r.IdRetour,
+                Motif = r.Motif,
+                DateRetour = r.DateRetour,
+                ProductName = r.IdArticleNavigation.NomArt,
+                ProductReference = r.IdArticleNavigation.ReferenceArt,
+                OrderNumber = $"CMD-{r.IdVente:D6}",
+                ClientName = $"{r.IdVenteNavigation.IdClientNavigation.PrenomClient} {r.IdVenteNavigation.IdClientNavigation.NomClient}",
+                ClientEmail = r.IdVenteNavigation.IdClientNavigation.MailClient,
+                Status = "En cours de traitement"
+            })
+            .ToListAsync();
+
+        return View(returns);
+    }
+
+    /// <summary>
+    /// Détails d'un retour
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> ReturnDetails(int id)
+    {
+        var retour = await _dbContext.Retours
+            .Include(r => r.IdArticleNavigation)
+            .Include(r => r.IdVenteNavigation)
+                .ThenInclude(v => v.IdClientNavigation)
+            .FirstOrDefaultAsync(r => r.IdRetour == id);
+
+        if (retour == null)
+        {
+            TempData["ErrorMessage"] = "Retour non trouvé";
+            return RedirectToAction(nameof(Returns));
+        }
+
+        var model = new AdminReturnViewModel
+        {
+            IdRetour = retour.IdRetour,
+            Motif = retour.Motif,
+            DateRetour = retour.DateRetour,
+            IdArticle = retour.IdArticle,
+            IdVente = retour.IdVente,
+            ProductName = retour.IdArticleNavigation?.NomArt,
+            ProductReference = retour.IdArticleNavigation?.ReferenceArt,
+            ProductImage = retour.IdArticleNavigation?.ImagePath,
+            ProductPrice = retour.IdArticleNavigation?.PrixUnit,
+            OrderNumber = $"CMD-{retour.IdVente:D6}",
+            OrderDate = retour.IdVenteNavigation?.DateVente,
+            ClientName = $"{retour.IdVenteNavigation?.IdClientNavigation?.PrenomClient} {retour.IdVenteNavigation?.IdClientNavigation?.NomClient}",
+            ClientEmail = retour.IdVenteNavigation?.IdClientNavigation?.MailClient,
+            ClientPhone = retour.IdVenteNavigation?.IdClientNavigation?.TelClient,
+            Status = "En cours de traitement"
+        };
+
+        return View(model);
+    }
+
+    /// <summary>
+    /// Supprimer un retour
+    /// </summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteReturn(int id)
+    {
+        var retour = await _dbContext.Retours.FindAsync(id);
+        
+        if (retour == null)
+        {
+            TempData["ErrorMessage"] = "Retour non trouvé";
+            return RedirectToAction(nameof(Returns));
+        }
+
+        _dbContext.Retours.Remove(retour);
+        await _dbContext.SaveChangesAsync();
+
+        TempData["SuccessMessage"] = "Retour supprimé avec succès";
+        return RedirectToAction(nameof(Returns));
+    }
+
+    #endregion
+
+    #region Gestion des Avis (Admin)
+
+    /// <summary>
+    /// Liste tous les avis de produits
+    /// </summary>
+    public async Task<IActionResult> Reviews()
+    {
+        var reviews = await _dbContext.Reviews
+            .Include(r => r.IdArticleNavigation)
+            .Include(r => r.IdClientNavigation)
+            .OrderByDescending(r => r.IdReview)
+            .Select(r => new AdminReviewViewModel
+            {
+                IdReview = r.IdReview,
+                Rating = r.Rating ?? 0,
+                Comment = r.Comment,
+                ProductName = r.IdArticleNavigation.NomArt,
+                ProductReference = r.IdArticleNavigation.ReferenceArt,
+                ProductImage = r.IdArticleNavigation.ImagePath,
+                ClientName = $"{r.IdClientNavigation.PrenomClient} {r.IdClientNavigation.NomClient}",
+                ClientEmail = r.IdClientNavigation.MailClient
+            })
+            .ToListAsync();
+
+        ViewBag.TotalReviews = reviews.Count;
+        ViewBag.AverageRating = reviews.Any() ? reviews.Average(r => r.Rating) : 0;
+
+        return View(reviews);
+    }
+
+    /// <summary>
+    /// Supprimer un avis (modération)
+    /// </summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteReview(int id)
+    {
+        var review = await _dbContext.Reviews.FindAsync(id);
+        
+        if (review == null)
+        {
+            return Json(new { success = false, message = "Avis non trouvé" });
+        }
+
+        _dbContext.Reviews.Remove(review);
+        await _dbContext.SaveChangesAsync();
+
+        _logger.LogInformation("Avis {ReviewId} supprimé par l'administrateur {Admin}", id, User.Identity?.Name);
+
+        return Json(new { success = true, message = "Avis supprimé avec succès" });
+    }
+
+    #endregion
+
+    #region Gestion des Factures (Admin)
+
+    /// <summary>
+    /// Liste toutes les factures
+    /// </summary>
+    public async Task<IActionResult> Invoices()
+    {
+        var invoices = await _dbContext.Factures
+            .Include(f => f.IdVenteNavigation)
+                .ThenInclude(v => v.IdClientNavigation)
+            .OrderByDescending(f => f.DateFacture)
+            .Select(f => new AdminInvoiceViewModel
+            {
+                IdFacture = f.IdFacture,
+                CodeFacture = f.CodeFacture,
+                DateFacture = f.DateFacture,
+                MontantTotal = f.MontantTotal,
+                FilePath = f.FilePath,
+                IdVente = f.IdVente,
+                OrderDate = f.IdVenteNavigation.DateVente,
+                ClientName = $"{f.IdVenteNavigation.IdClientNavigation.PrenomClient} {f.IdVenteNavigation.IdClientNavigation.NomClient}",
+                ClientEmail = f.IdVenteNavigation.IdClientNavigation.MailClient
+            })
+            .ToListAsync();
+
+        ViewBag.TotalInvoices = invoices.Count;
+        ViewBag.TotalAmount = invoices.Sum(i => i.MontantTotal ?? 0);
+
+        return View(invoices);
+    }
+
+    #endregion
+
     #region Gestion Avancée des Utilisateurs
 
     /// <summary>

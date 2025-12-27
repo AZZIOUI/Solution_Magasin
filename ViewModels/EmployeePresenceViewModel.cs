@@ -105,6 +105,16 @@ public class EmployeeDashboardViewModel
     [DisplayFormat(DataFormatString = "{0:N2} MAD")]
     public double TotalAchatsCeMois { get; set; }
     
+    // Statistiques des commandes (pour Magasinier)
+    [Display(Name = "Commandes En Traitement")]
+    public int CommandesEnTraitement { get; set; }
+    
+    [Display(Name = "Commandes En Préparation")]
+    public int CommandesEnPreparation { get; set; }
+    
+    [Display(Name = "Commandes Prêtes Aujourd'hui")]
+    public int CommandesPretesAujourdhui { get; set; }
+    
     // Présence aujourd'hui
     public PresenceViewModel? PresenceAujourdhui { get; set; }
     

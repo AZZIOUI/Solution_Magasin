@@ -95,6 +95,7 @@ namespace Solution_Magasin
             // Enregistrer les services
             builder.Services.AddScoped<DatabaseSeeder>();
             builder.Services.AddScoped<IImageUploadService, ImageUploadService>();
+            builder.Services.AddScoped<InvoiceService>();
 
             var app = builder.Build();
 

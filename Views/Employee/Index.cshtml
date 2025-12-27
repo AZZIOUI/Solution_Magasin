@@ -199,6 +199,70 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Statistiques des Commandes -->
+            <div class="col-md-6 col-lg-3 mb-3">
+                <div class="card text-white bg-secondary">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title text-white">En traitement</h6>
+                                <h2 class="mb-0">@Model.CommandesEnTraitement</h2>
+                            </div>
+                            <div class="fs-1">
+                                <i class="bi bi-hourglass-split"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent border-light">
+                        <a asp-action="Orders" asp-route-status="En traitement" class="text-white text-decoration-none">
+                            <small>Voir les commandes <i class="bi bi-arrow-right"></i></small>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3 mb-3">
+                <div class="card text-white bg-info">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title text-white">En préparation</h6>
+                                <h2 class="mb-0">@Model.CommandesEnPreparation</h2>
+                            </div>
+                            <div class="fs-1">
+                                <i class="bi bi-box-seam"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent border-light">
+                        <a asp-action="Orders" asp-route-status="En préparation" class="text-white text-decoration-none">
+                            <small>Préparer les commandes <i class="bi bi-arrow-right"></i></small>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3 mb-3">
+                <div class="card text-white" style="background-color: #0d6efd;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title text-white">Prêtes aujourd'hui</h6>
+                                <h2 class="mb-0">@Model.CommandesPretesAujourdhui</h2>
+                            </div>
+                            <div class="fs-1">
+                                <i class="bi bi-check-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent border-light">
+                        <a asp-action="Orders" asp-route-status="Prête" class="text-white text-decoration-none">
+                            <small>Voir les commandes prêtes <i class="bi bi-arrow-right"></i></small>
+                        </a>
+                    </div>
+                </div>
+            </div>
         }
 
         <!-- Statistiques d'Achats (pour Responsable d'Achat et Admin) -->
@@ -241,6 +305,20 @@
                         </h5>
                         <p class="card-text">Gérez les stocks, consultez les alertes et mettez à jour les quantités disponibles.</p>
                         <a asp-action="StockManagement" class="btn btn-primary">
+                            <i class="bi bi-arrow-right-circle"></i> Accéder
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card h-100 shadow-sm border-info">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-box-seam text-info"></i> Gestion des Commandes
+                        </h5>
+                        <p class="card-text">Consultez les commandes, préparez-les depuis le magasin et mettez à jour leur statut.</p>
+                        <a asp-action="Orders" class="btn btn-info text-white">
                             <i class="bi bi-arrow-right-circle"></i> Accéder
                         </a>
                     </div>

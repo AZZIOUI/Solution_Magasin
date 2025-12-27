@@ -112,6 +112,15 @@ public class EmployeeController : Controller
                 DateNotification = n.DateNot,
                 Vu = n.Vu ?? false
             }).ToList();
+
+            // Statistiques des commandes (pour Magasinier et Admin)
+            var aujourdhui = DateTime.Today;
+            viewModel.CommandesEnTraitement = await _context.Ventes
+                .CountAsync(v => v.Status == "En traitement");
+            viewModel.CommandesEnPreparation = await _context.Ventes
+                .CountAsync(v => v.Status == "En préparation");
+            viewModel.CommandesPretesAujourdhui = await _context.Ventes
+                .CountAsync(v => v.Status == "Prête" && v.DateVente.HasValue && v.DateVente.Value.Date == aujourdhui);
         }
 
         // Statistiques d'achats (pour Responsable d'Achat et Admin)
@@ -506,6 +515,145 @@ public class EmployeeController : Controller
 
         TempData["SuccessMessage"] = "Achat créé avec succès";
         return RedirectToAction(nameof(PurchaseManagement));
+    }
+
+    #endregion
+
+    #region Gestion des Commandes (Pour Magasinier)
+
+    /// <summary>
+    /// Affiche toutes les commandes - Pour le magasinier qui prépare les commandes
+    /// </summary>
+    [Authorize(Roles = $"{RoleConstants.Administrateur},{RoleConstants.Magasinier}")]
+    public async Task<IActionResult> Orders(string status, DateTime? startDate, DateTime? endDate)
+    {
+        var query = _context.Ventes
+            .Include(v => v.IdClientNavigation)
+            .Include(v => v.IdPaymentNavigation)
+            .Include(v => v.DetailVentes)
+            .AsQueryable();
+
+        // Filtres
+        if (!string.IsNullOrEmpty(status))
+        {
+            query = query.Where(v => v.Status == status);
+        }
+
+        if (startDate.HasValue)
+        {
+            query = query.Where(v => v.DateVente >= startDate.Value);
+        }
+
+        if (endDate.HasValue)
+        {
+            query = query.Where(v => v.DateVente <= endDate.Value);
+        }
+
+        var orders = await query
+            .OrderByDescending(v => v.DateVente)
+            .ToListAsync();
+
+        var viewModel = orders.Select(v => new EmployeeOrderViewModel
+        {
+            IdVente = v.IdVente,
+            DateVente = v.DateVente,
+            ClientName = $"{v.IdClientNavigation.PrenomClient} {v.IdClientNavigation.NomClient}",
+            ClientPhone = v.IdClientNavigation.TelClient,
+            AdresseLiv = v.AdresseLiv,
+            TotalV = v.TotalV,
+            Status = v.Status ?? "En traitement",
+            PaymentMethod = v.IdPaymentNavigation?.Methode,
+            PaymentStatus = v.IdPaymentNavigation?.EstPaye == true ? "Payé" : "En attente",
+            ItemCount = v.DetailVentes.Count
+        }).ToList();
+
+        // Liste des statuts pour le filtre
+        ViewBag.Statuses = new SelectList(new[]
+        {
+            new { Value = "En traitement", Text = "En traitement" },
+            new { Value = "En préparation", Text = "En préparation" },
+            new { Value = "Prête", Text = "Prête" },
+            new { Value = "Expédiée", Text = "Expédiée" },
+            new { Value = "Livrée", Text = "Livrée" }
+        }, "Value", "Text");
+
+        ViewBag.Status = status;
+        ViewBag.StartDate = startDate;
+        ViewBag.EndDate = endDate;
+
+        return View(viewModel);
+    }
+
+    /// <summary>
+    /// Affiche les détails d'une commande
+    /// </summary>
+    [Authorize(Roles = $"{RoleConstants.Administrateur},{RoleConstants.Magasinier}")]
+    public async Task<IActionResult> OrderDetails(int id)
+    {
+        var vente = await _context.Ventes
+            .Include(v => v.IdClientNavigation)
+            .Include(v => v.IdPaymentNavigation)
+            .Include(v => v.DetailVentes)
+                .ThenInclude(dv => dv.IdArticleNavigation)
+                    .ThenInclude(a => a.Stocks)
+            .FirstOrDefaultAsync(v => v.IdVente == id);
+
+        if (vente == null)
+        {
+            return NotFound();
+        }
+
+        var viewModel = new EmployeeOrderViewModel
+        {
+            IdVente = vente.IdVente,
+            DateVente = vente.DateVente,
+            ClientName = $"{vente.IdClientNavigation.PrenomClient} {vente.IdClientNavigation.NomClient}",
+            ClientEmail = vente.IdClientNavigation.MailClient,
+            ClientPhone = vente.IdClientNavigation.TelClient,
+            ClientAddress = vente.IdClientNavigation.AdresseClient,
+            AdresseLiv = vente.AdresseLiv,
+            TotalV = vente.TotalV,
+            Status = vente.Status ?? "En traitement",
+            PaymentMethod = vente.IdPaymentNavigation?.Methode,
+            PaymentStatus = vente.IdPaymentNavigation?.EstPaye == true ? "Payé" : "En attente",
+            ItemCount = vente.DetailVentes.Count,
+            Items = vente.DetailVentes.Select(dv => new EmployeeOrderItemViewModel
+            {
+                IdArticle = dv.IdArticle,
+                ProductName = dv.IdArticleNavigation?.NomArt,
+                ProductReference = dv.IdArticleNavigation?.ReferenceArt,
+                ImagePath = dv.IdArticleNavigation?.ImagePath,
+                Quantity = dv.QteDv ?? 0,
+                UnitPrice = dv.QteDv > 0 ? (dv.MontantDv ?? 0) / dv.QteDv.Value : 0,
+                Subtotal = dv.MontantDv ?? 0,
+                StockAvailable = dv.IdArticleNavigation?.Stocks.FirstOrDefault()?.QteDispo ?? 0
+            }).ToList()
+        };
+
+        return View(viewModel);
+    }
+
+    /// <summary>
+    /// Met à jour le statut d'une commande
+    /// </summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = $"{RoleConstants.Administrateur},{RoleConstants.Magasinier}")]
+    public async Task<IActionResult> UpdateOrderStatus(int id, string newStatus)
+    {
+        var vente = await _context.Ventes.FindAsync(id);
+        if (vente == null)
+        {
+            return Json(new { success = false, message = "Commande introuvable" });
+        }
+
+        vente.Status = newStatus;
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Order {OrderId} status updated to {Status} by {User}", 
+            id, newStatus, User.Identity?.Name);
+
+        return Json(new { success = true, message = $"Statut mis à jour: {newStatus}" });
     }
 
     #endregion

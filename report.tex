@@ -1,0 +1,651 @@
+% filepath: d:\School sheets\4eme Annee\DOTNET\Solution_Magasin\rapport\rapport_module.tex
+\documentclass[12pt,a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{lmodern}
+
+% Add simple fallbacks for French ordinal macros often used in templates
+\providecommand{\ieme}{\textsuperscript{e}}
+\providecommand{\ier}{\textsuperscript{er}}
+\providecommand{\iere}{\textsuperscript{re}}
+
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usepackage{hyperref}
+\usepackage{microtype}
+\usepackage{ragged2e}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=blue,
+    citecolor=black
+}
+
+\setlist[itemize]{noitemsep, topsep=2pt}
+\setlist[enumerate]{noitemsep, topsep=2pt}
+
+\begin{document}
+\Justifying
+\sloppy
+\pagenumbering{roman}
+
+% =====================================================
+% PAGE DE GARDE
+% =====================================================
+\begin{titlepage}
+\thispagestyle{empty}
+
+% Background shapes
+\begin{tikzpicture}[remember picture,overlay]
+    \fill[green!60!black] (current page.north west)
+        rectangle ([xshift=1.2cm]current page.south west);
+    \fill[gray!70] ([xshift=0.35cm,yshift=0.55cm]current page.south west)
+        rectangle ([xshift=0.75cm,yshift=0.25cm]current page.south west);
+\end{tikzpicture}
+
+\null
+\vfill
+
+\noindent\hspace*{1.2cm}
+\begin{minipage}{\dimexpr\textwidth-1.2cm\relax}
+\centering
+
+% Logos
+\begin{minipage}[t]{0.48\textwidth}
+    \raggedright
+    \IfFileExists{imgs/emsi.png}{\includegraphics[width=0.85\textwidth]{imgs/emsi.png}}{}
+\end{minipage}
+\begin{minipage}[t]{0.48\textwidth}
+    \raggedleft
+    \IfFileExists{imgs/Honoris.png}{\includegraphics[width=0.55\textwidth]{imgs/Honoris.png}}{}
+\end{minipage}
+
+\vspace{2cm}
+
+{\Large\bfseries Rapport de Projet de Dot Net\par}
+\vspace{1.2cm}
+{\large 4\ieme\ année\par}
+{\large Ingénierie Informatique et Réseaux\par}
+
+\vspace{1.5cm}
+\noindent\makebox[\linewidth]{\dotfill}
+
+{\Huge\bfseries Conception et Realisation d'une application web de gestion de magasin\par}
+
+\noindent\makebox[\linewidth]{\dotfill}
+
+\vspace{1.8cm}
+
+{\large\textbf{Réalisé par :}\\
+Zakaria AZZIOUI -- 4IIR4\\
+Walid NASSER -- 4IIR4\par}
+
+\vspace{0.6cm}
+
+{\large\textbf{Encadré par :} BENSALAH NOUHAILA\par}
+
+\vspace{1.8cm}
+
+{\large\textbf{Année Universitaire : 2025--2026}\par}
+
+\end{minipage}
+
+\vfill
+\null
+
+\end{titlepage}
+
+
+% =====================================================
+% REMERCIEMENTS
+% =====================================================
+\chapter*{Remerciements}
+\addcontentsline{toc}{chapter}{Remerciements}
+
+Nous adressons nos sincères remerciements à notre encadrante, \textbf{Madame BENSALAH NOUHAILA}, pour son suivi méthodique, ses orientations techniques et la qualité de ses remarques tout au long de la réalisation du projet. Son encadrement a été essentiel pour structurer notre démarche et améliorer progressivement la solution développée.
+
+Nous remercions également notre \textbf{établissement} et l’ensemble de l’équipe pédagogique pour les ressources mises à disposition, ainsi que pour le cadre académique qui favorise l’apprentissage par la pratique et la mise en situation réelle de développement.
+
+Nous tenons à souligner l’importance du travail en binôme : la réussite de ce projet repose sur une collaboration continue, une répartition claire des tâches et des échanges réguliers permettant de valider les choix de conception, de résoudre les problèmes rencontrés et d’assurer une bonne qualité finale.
+
+Enfin, nous exprimons notre gratitude à nos \textbf{familles} pour leur soutien moral, leur patience et leurs encouragements, qui ont contribué à maintenir une motivation constante durant toutes les étapes du projet.
+
+% =====================================================
+% RESUME
+% =====================================================
+\chapter*{Résumé}
+\addcontentsline{toc}{chapter}{Résumé}
+
+Dans le cadre du module Dot Net, ce projet s’inscrit dans une démarche d’apprentissage orientée vers la conception d’une application web structurée, sécurisée et connectée à une base de données. Le contexte pédagogique vise à consolider des compétences fondamentales : organisation d’un projet, gestion des données, mise en place d’une authentification et respect de bonnes pratiques.
+
+La problématique traitée concerne la gestion d’un magasin, où plusieurs opérations (consultation du catalogue, suivi du stock, achats fournisseurs, ventes et service client) doivent être centralisées afin de limiter les erreurs et d’améliorer la traçabilité.
+
+L’objectif du projet est de concevoir et de réaliser une application web permettant de gérer : un espace public (visiteur), un espace client (panier, commande, paiement simulé, suivi des commandes), un espace employé (stock, achats et commandes selon les rôles, présence) et un espace administrateur (gestion globale des référentiels et des utilisateurs).
+
+Sur le plan technique, le projet repose sur l’écosystème \textbf{.NET 10} (C\#) avec une base relationnelle (SQL Server) et une interface web basée sur des vues \textbf{Razor} et \textbf{Bootstrap}. La sécurité d’accès est assurée par l’authentification et l’autorisation par rôles.
+
+% =====================================================
+% TABLE DE MATIERES
+% =====================================================
+\tableofcontents
+\addcontentsline{toc}{chapter}{Table des matières}
+
+\listoffigures
+\addcontentsline{toc}{chapter}{Liste des figures}
+
+\newpage
+\pagenumbering{arabic}
+
+% =====================================================
+% INTRODUCTION
+% =====================================================
+\chapter*{Introduction}
+\addcontentsline{toc}{chapter}{Introduction}
+
+Le domaine de la gestion informatisée des magasins occupe une place centrale dans la digitalisation des activités commerciales. Une application de gestion permet de structurer les données, d’assurer une meilleure visibilité sur le stock et de faciliter le pilotage des opérations. Dans un environnement réel, les décisions de réapprovisionnement, la prévention des ruptures et la réduction des pertes dépendent directement de la qualité des informations disponibles.
+
+Dans le cadre du module Dot Net, ce projet présente un intérêt pédagogique : il permet de mettre en pratique les notions vues en cours (développement web, persistance des données, gestion des utilisateurs et sécurité). L’objectif n’est pas seulement d’obtenir une application fonctionnelle, mais aussi de produire une solution organisée et cohérente avec un cahier des charges.
+
+Ce rapport est organisé en trois chapitres : le premier présente l’analyse du projet et le cahier des charges ; le deuxième détaille la modélisation UML ; et le troisième décrit la réalisation et la présentation des interfaces.
+
+% =====================================================
+% CHAPITRE 1 : ANALYSE DE PROJET
+% =====================================================
+\chapter{Analyse de projet}
+
+\section{Présentation du projet}
+Le projet consiste à concevoir et réaliser une application web de gestion de magasin. Le domaine concerne la \textbf{gestion commerciale et opérationnelle} d’un point de vente : organisation du catalogue de produits, suivi des quantités disponibles, enregistrement des achats fournisseurs et des ventes, ainsi que la prise en charge d’actions liées au service client (avis et retours).
+
+L’idée générale est de disposer d’une plateforme unique qui centralise les informations et qui structure les usages selon les profils (visiteur, client, employé, administrateur). Cette approche permet de limiter la dispersion des données, d’améliorer la visibilité sur l’activité du magasin, et de réduire les erreurs liées à une gestion manuelle.
+
+Sur le plan pédagogique, ce projet permet de mettre en pratique un cycle complet de développement d’application web : identification des besoins, modélisation, mise en place d’une persistance (base de données), conception d’interfaces, et gestion de la sécurité d’accès par authentification/autorisation.
+
+\section{Problématique}
+Dans un contexte où les informations du magasin sont suivies de manière non centralisée (documents dispersés, saisies manuelles), plusieurs difficultés apparaissent : manque de visibilité sur le stock réel, incohérences lors des mises à jour, difficulté à retrouver l’historique des opérations (achats, commandes), et risque d’accès non contrôlé à des fonctionnalités sensibles.
+
+La problématique du projet peut être formulée comme suit : \textbf{comment concevoir une application web qui centralise les informations d’un magasin et qui organise l’accès aux fonctionnalités selon les rôles, tout en garantissant une gestion cohérente du catalogue, des commandes et du stock ?}
+
+\section{Solution proposée}
+La solution réalisée est structurée en espaces correspondant aux utilisateurs de l’application :
+\begin{itemize}
+    \item \textbf{Espace visiteur (public)} : consultation du catalogue, recherche/filtre et accès aux détails produit.
+    \item \textbf{Espace client} : authentification, gestion du panier, checkout (adresse de livraison), paiement \textbf{simulé}, confirmation, historique des commandes, demandes de retours et gestion des avis.
+    \item \textbf{Espace employé} :
+    \begin{itemize}
+        \item \textbf{Magasinier} : gestion du stock, notifications de stock et consultation/traitement des commandes.
+        \item \textbf{Responsable d'achat} : création et suivi des achats fournisseurs et mise à jour du stock après approvisionnement.
+        \item \textbf{Présence} : pointage (arrivée/départ) et consultation de l’historique.
+    \end{itemize}
+    \item \textbf{Espace administrateur} : gestion des utilisateurs (dont création d’employés), gestion des produits, catégories, fournisseurs, ventes, achats, retours, avis et consultation des factures.
+\end{itemize}
+
+\textbf{Remarque importante :} le paiement est volontairement simulé dans le cadre du projet (aucune intégration de passerelle de paiement). En revanche, une \textbf{facture} peut être consultée/générée sous forme de page HTML.
+
+\section{Cahier des charges}
+
+\subsection{Identification des acteurs}
+Les acteurs et leurs responsabilités principales sont :
+\begin{itemize}
+    \item \textbf{Visiteur :} consulter le catalogue et les détails produit.
+    \item \textbf{Client :} gérer le panier, passer commande, consulter ses commandes, demander un retour et déposer un avis.
+    \item \textbf{Magasinier :} suivre le stock, traiter les notifications et gérer le flux de commandes (consultation et mise à jour de statut).
+    \item \textbf{Responsable d'achat :} gérer les achats fournisseurs et contribuer au réapprovisionnement.
+    \item \textbf{Administrateur :} superviser l’ensemble, administrer les référentiels (produits/catégories/fournisseurs), gérer les utilisateurs (clients/employés) et contrôler les opérations (ventes, achats, retours, avis, factures).
+\end{itemize}
+
+\subsection{Objectifs du projet}
+\begin{enumerate}
+    \item Centraliser les données du magasin dans une base unique.
+    \item Fournir une application web avec une séparation claire par profils.
+    \item Proposer un parcours client complet : catalogue $\rightarrow$ panier $\rightarrow$ checkout $\rightarrow$ paiement simulé $\rightarrow$ confirmation.
+    \item Mettre à disposition un espace interne : stock, achats, commandes et présences.
+    \item Assurer une base solide pour des évolutions futures (rapports, alertes avancées, paiement réel).
+\end{enumerate}
+
+\subsection{Besoins fonctionnels}
+\paragraph{Côté visiteur}
+\begin{itemize}
+    \item Consulter le catalogue.
+    \item Rechercher et filtrer les produits.
+    \item Consulter les détails d’un produit (avis, stock indicatif).
+\end{itemize}
+
+\paragraph{Côté client}
+\begin{itemize}
+    \item S’inscrire et se connecter.
+    \item Gérer le panier (ajout, modification, suppression).
+    \item Valider la commande (informations de livraison).
+    \item Effectuer un paiement simulé et obtenir une confirmation.
+    \item Consulter ses commandes et télécharger/visualiser la facture.
+    \item Déposer un avis (uniquement après achat) et demander un retour.
+\end{itemize}
+
+\paragraph{Côté employé}
+\begin{itemize}
+    \item Magasinier : gérer le stock, consulter les notifications, consulter les commandes et mettre à jour leur statut.
+    \item Responsable d'achat : gérer les achats et la mise à jour du stock après approvisionnement.
+    \item Gérer la présence (arrivée/départ) et consulter l’historique.
+\end{itemize}
+
+\paragraph{Côté administrateur}
+\begin{itemize}
+    \item Créer des employés et affecter leurs rôles.
+    \item Gérer produits, catégories, fournisseurs.
+    \item Suivre ventes, achats, retours, avis et factures.
+    \item Gérer les utilisateurs (activation/désactivation).
+\end{itemize}
+
+\subsection{Besoins non fonctionnels}
+\begin{itemize}
+    \item \textbf{Sécurité :} contrôle d’accès par rôles et protection des espaces internes.
+    \item \textbf{Fiabilité :} contrôles de cohérence essentiels (ex. stock disponible avant ajout/commande, avis après achat).
+    \item \textbf{Ergonomie :} pages par rôle, navigation claire, formulaires simples.
+    \item \textbf{Performance :} pagination du catalogue et chargement raisonnable des listes.
+\end{itemize}
+
+\subsection{Contraintes techniques}
+\begin{itemize}
+    \item Développement en C\# (.NET) et application web basée sur des vues Razor.
+    \item Base de données relationnelle (SQL Server).
+    \item Tests via navigateur et environnement Visual Studio.
+\end{itemize}
+
+\section{Gestion du projet}
+
+\subsection{Méthodologie de travail}
+Le projet a été mené en binôme avec une organisation itérative. Chaque itération a consisté à ajouter une fonctionnalité, puis à la valider sur des scénarios simples (connexion, catalogue, panier, commande, stock, achats, etc.).
+
+\subsection{Équipe du projet}
+\begin{itemize}
+    \item Zakaria AZZIOUI (4IIR4) : participation à l’analyse, conception, développement et tests.
+    \item Walid NASSER (4IIR4) : participation à l’analyse, conception, développement et tests.
+\end{itemize}
+
+\subsection{Diagramme de Gantt}
+Le planning a été structuré en phases : analyse, conception, développement, tests et corrections.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{imgs/gantt.png}
+    \caption{Diagramme de Gantt du projet}
+    \label{fig:gantt}
+\end{figure}
+
+
+
+\section*{Conclusion du chapitre}
+\addcontentsline{toc}{section}{Conclusion du chapitre}
+Ce chapitre a présenté le projet dans son contexte pédagogique et technique, a formulé la problématique, puis a défini une solution cohérente avec un cahier des charges clair. La gestion du projet et l’organisation de l’équipe ont permis de structurer le travail, ce qui prépare l’analyse détaillée et la conception décrites dans les chapitres suivants.
+
+% =====================================================
+% =====================================================
+% CHAPITRE 3 : MODÉLISATION ET CONCEPTION
+% =====================================================
+\chapter{Modélisation et conception}
+
+\section{Diagrammes UML}
+
+\subsection{Diagrammes de cas d’utilisation}
+\paragraph{Administrateur}
+\begin{itemize}
+    \item Gérer les employés et les rôles
+    \item Gérer les articles et catégories
+    \item Superviser les ventes, paiements et factures
+    \item Gérer les retours et les reviews
+\end{itemize}
+
+Ce diagramme résume les interactions de l’administrateur : il centralise les fonctionnalités de supervision et de gestion (référentiels, utilisateurs, ventes/achats, factures et service client) afin d’assurer le pilotage global du système.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{imgs/use_admin.png}
+    \caption{Diagramme de cas d’utilisation : administrateur}
+    \label{fig:use-admin}
+\end{figure}
+
+\paragraph{Responsable Achat}
+\begin{itemize}
+    \item Gérer les fournisseurs
+    \item Créer des achats fournisseurs
+    \item Ajouter les détails d’achats
+    \item Mettre à jour le stock après achat
+\end{itemize}
+
+Ce diagramme met en évidence le rôle du responsable d’achat dans le processus d’approvisionnement : gestion des fournisseurs, enregistrement des achats et mise à jour du stock afin d’assurer la disponibilité des articles.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{imgs/use_respoachat.png}
+    \caption{Diagramme de cas d’utilisation : responsable d’achat}
+    \label{fig:use-respoachat}
+\end{figure}
+
+\paragraph{Magasinier}
+\begin{itemize}
+    \item Consulter le stock
+    \item Mettre à jour les quantités disponibles
+    \item Surveiller le stock minimum
+    \item Traiter les notifications de stock
+\end{itemize}
+
+Ce diagramme résume les actions du magasinier liées au stock et aux commandes : contrôle des quantités, suivi des alertes et traitement opérationnel pour maintenir une cohérence entre ventes et disponibilité.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{imgs/use_magasinier.png}
+    \caption{Diagramme de cas d’utilisation : magasinier}
+    \label{fig:use-magasinier}
+\end{figure}
+
+\paragraph{Client / Visiteur}
+\begin{itemize}
+    \item Créer un compte et se connecter
+    \item Consulter les articles
+    \item Passer une commande
+    \item Effectuer un paiement
+    \item Consulter la facture
+    \item Laisser un avis
+    \item Demander un retour
+\end{itemize}
+
+Ce diagramme présente le parcours côté utilisateur final : le visiteur consulte le catalogue, puis le client authentifié gère panier/commande/paiement simulé et accède au suivi (facture, avis et retours) après achat.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{imgs/use_client_visiteur.png}
+    \caption{Diagramme de cas d’utilisation : client / visiteur}
+    \label{fig:use-client-visitor}
+\end{figure}
+
+% Figure use case global (à renommer après insertion)
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{usecase.png}
+    \caption{Diagramme de cas d’utilisation global de l’application}
+    \label{fig:usecase}
+\end{figure}
+
+
+\subsection{Diagramme de classes}
+Le diagramme de classes met en évidence des entités structurantes pour la gestion :
+\begin{itemize}
+    \item \textbf{Employé}, \textbf{Client} et \textbf{Utilisateur (Identity)} : distinction claire entre comptes applicatifs et données métier, avec rattachement d’un utilisateur à un client ou à un employé.
+    \item \textbf{Catégorie} et \textbf{Article} pour le référentiel des produits.
+    \item \textbf{Stock} et \textbf{NotificationStock} pour le suivi quantitatif et les alertes.
+    \item \textbf{Fournisseur}, \textbf{Achat} et \textbf{DetailAchat} pour le processus d’approvisionnement.
+    \item \textbf{Vente}, \textbf{DetailVente}, \textbf{Payment} et \textbf{Facture} pour le parcours de vente et la facturation.
+    \item \textbf{Retour} et \textbf{Review} pour les opérations liées au service client.
+    \item \textbf{Presence} pour le suivi des présences côté employé.
+\end{itemize}
+
+% Figure class diagram (à renommer après insertion)
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{imgs/Main.jpg}
+    \caption{Diagramme de classes (entités principales et relations)}
+    \label{fig:classdiagram}
+\end{figure}
+
+\subsection{Diagrammes de séquence}
+
+\paragraph{Création d’un employé (Administrateur)}
+Cette séquence illustre le processus où l’administrateur crée un compte employé, affecte un rôle (magasinier ou responsable d’achat) et lie le compte aux informations métier de l’employé. Cette étape permet d’assurer que l’accès aux fonctionnalités internes est strictement réservé aux profils autorisés.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{imgs/creation_employe.png}
+    \caption{Diagramme de séquence : création d’un employé}
+    \label{fig:seq-create-employee}
+\end{figure}
+
+\paragraph{Création d’un client (Inscription)}
+Cette séquence décrit la création d’un compte client : saisie des informations, validation côté serveur, enregistrement du compte et association au profil client dans la base. Elle garantit une séparation claire entre les comptes clients et les comptes employés.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{imgs/creation_client.png}
+    \caption{Diagramme de séquence : création d’un client}
+    \label{fig:seq-create-client}
+\end{figure}
+
+\paragraph{Commande d’un client (panier \texorpdfstring{$\rightarrow$}{->} paiement)}
+Cette séquence représente le parcours e-commerce : ajout au panier, validation, saisie de l’adresse de livraison, paiement simulé, création de la vente et mise à jour des stocks. Elle met en évidence les validations indispensables pour éviter une commande dépassant le stock disponible.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{imgs/commande_client.png}
+    \caption{Diagramme de séquence : commande d’un client}
+    \label{fig:seq-client-order}
+\end{figure}
+
+\paragraph{Traitement des commandes par le magasinier}
+Cette séquence montre l’intervention du magasinier sur les commandes : consultation des ventes en attente, préparation et actions liées au stock et aux notifications. L’objectif est de relier le flux de vente côté client au traitement interne côté magasin.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{imgs/magasinier_commande.png}
+    \caption{Diagramme de séquence : traitement d’une commande par le magasinier}
+    \label{fig:seq-storekeeper-order}
+\end{figure}
+
+% =====================================================
+% CHAPITRE 4 : RÉALISATION DU PROJET
+% =====================================================
+\chapter{Réalisation du projet}
+
+\section{Outils de développement}
+
+\subsection{Environnement de travail}
+Le développement a été réalisé dans un environnement standard pour le module Dot Net :
+\begin{itemize}
+    \item \textbf{IDE :} Visual Studio (et/ou Visual Studio Code) pour le codage, le débogage et l’exécution.
+    \item \textbf{Langages :} C\# (backend) et technologies web (HTML/CSS et scripts) pour l’interface.
+    \item \textbf{Framework :} ASP.NET (dans l’écosystème .NET) pour structurer l’application web.
+    \item \textbf{Base de données :} SGBD relationnel (ex. SQL Server) pour gérer les relations et l’intégrité.
+\end{itemize}
+
+\section{Implémentation}
+
+\subsection{Backend}
+Le backend regroupe la logique de l’application, la gestion des accès et l’interaction avec la base de données. Les principales fonctionnalités sont organisées par espaces (visiteur, client, employé, administration), ce qui facilite la compréhension du flux global.
+
+\subsection{Frontend}
+L’interface web est composée de pages dédiées à chaque rôle. Les écrans principaux incluent : catalogue public, panier/checkout/paiement côté client, tableaux de bord et pages de gestion côté employé et administrateur.
+
+\subsection{Fonctionnalité avancée (si existante)}
+Dans le cadre d’un projet de module, une fonctionnalité avancée peut être intégrée selon l’implémentation réelle, par exemple :
+\begin{itemize}
+    \item export de données (CSV/PDF) ;
+    \item génération d’un rapport de stock ;
+    \item journalisation détaillée (logs) ;
+    \item API interne pour consommation future.
+\end{itemize}
+Si cette fonctionnalité est présente dans le code, elle est présentée avec ses objectifs, son intégration et ses limites. Sinon, cette section formalise une base d’extension réaliste, conforme à l’architecture existante.
+
+\section{Présentation des interfaces}
+
+\subsection*{Espace Visiteur}
+L’espace visiteur correspond à la partie publique de l’application. Il permet de découvrir le site et d’accéder aux pages principales sans authentification.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{imgs/visiter_home.png}
+    \caption{Espace visiteur : page d’accueil}
+    \label{fig:visitor-home}
+\end{figure}
+
+\subsection*{Authentification}
+La page de connexion permet l’accès sécurisé aux espaces internes (client/employé/administrateur) selon les droits.
+
+La figure suivante illustre le formulaire d’authentification : il permet d’ouvrir une session utilisateur et conditionne l’accès aux fonctionnalités selon le rôle attribué.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{imgs/login_page.png}
+    \caption{Page de connexion}
+    \label{fig:login}
+\end{figure}
+
+\subsection*{Espace Administrateur}
+L’administrateur dispose d’un tableau de bord global et d’écrans de gestion (utilisateurs/employés, factures, etc.), permettant de superviser l’activité.
+
+La figure suivante présente le tableau de bord administrateur, offrant une vue synthétique et un accès rapide aux principales opérations de supervision.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{imgs/admin_dashboard.png}
+    \caption{Espace administrateur : tableau de bord}
+    \label{fig:admin-dashboard}
+\end{figure}
+
+La figure suivante illustre la gestion des employés, utilisée pour créer des comptes, attribuer des rôles et contrôler l’accès aux espaces internes.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{imgs/admin_gestion_employes.png}
+    \caption{Espace administrateur : gestion des employés}
+    \label{fig:admin-employees}
+\end{figure}
+
+La figure suivante illustre la consultation/gestion des factures, permettant de suivre les ventes et d’accéder aux documents associés aux commandes.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{imgs/admin_gestion_factures.png}
+    \caption{Espace administrateur : gestion des factures}
+    \label{fig:admin-invoices}
+\end{figure}
+
+\subsection*{Espace Client}
+L’espace client permet de consulter le catalogue, gérer le panier, valider une commande et suivre l’historique (commandes, factures, avis et retours).
+
+La figure suivante présente le tableau de bord client, centré sur l’accès aux fonctionnalités principales (commandes, retours, avis et profil).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{imgs/client_dashboard.png}
+    \caption{Espace client : tableau de bord}
+    \label{fig:client-dashboard}
+\end{figure}
+
+La figure suivante illustre la page panier : elle permet de visualiser les articles sélectionnés et de modifier les quantités avant de passer au checkout.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{imgs/client_panier.png}
+    \caption{Espace client : panier}
+    \label{fig:client-cart}
+\end{figure}
+
+La figure suivante illustre l’étape de commande : elle représente la validation du parcours d’achat (informations de livraison, confirmation), avant paiement simulé.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{imgs/client_commande.png}
+    \caption{Espace client : commande}
+    \label{fig:client-order}
+\end{figure}
+
+\subsection*{Espace Employé (Magasinier)}
+Le magasinier dispose d’un espace dédié au suivi du stock (alertes/notifications) et au traitement des commandes (consultation et mise à jour de statut).
+
+La figure suivante présente le tableau de bord magasinier, qui regroupe les accès aux écrans de stock, notifications et commandes.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{imgs/magasinier_dashboard.png}
+    \caption{Espace magasinier : tableau de bord}
+    \label{fig:magasinier-dashboard}
+\end{figure}
+
+La figure suivante illustre la gestion des commandes par le magasinier, avec consultation des ventes et mise à jour du statut de traitement.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{imgs/magasinier_gestion_commande.png}
+    \caption{Espace magasinier : gestion des commandes}
+    \label{fig:magasinier-orders}
+\end{figure}
+
+\subsection*{Espace Employé (Responsable d’achat)}
+Le responsable d’achat dispose d’un tableau de bord et d’écrans dédiés à la gestion des fournisseurs et aux achats, avec mise à jour du stock via les achats enregistrés.
+
+La figure suivante présente le tableau de bord du responsable d’achat, qui centralise l’accès aux achats et aux fournisseurs.
+
+\begin{figure}[H]
+    \centering
+    \IfFileExists{imgs/respo_achat_dashboard.png}{\includegraphics[width=0.9\textwidth]{imgs/respo_achat_dashboard.png}}{%
+        \IfFileExists{imgs/respo_achat_dashboard.jpg}{\includegraphics[width=0.9\textwidth]{imgs/respo_achat_dashboard.jpg}}{}
+    }
+    \caption{Espace responsable d’achat : tableau de bord}
+    \label{fig:respo-achat-dashboard}
+\end{figure}
+
+La figure suivante illustre l’écran de gestion des fournisseurs et des achats, utilisé pour enregistrer les approvisionnements et assurer le réassort.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{imgs/respo_achat_fournisseur_achat.png}
+    \caption{Espace responsable d’achat : gestion des fournisseurs et des achats}
+    \label{fig:respo-achat-suppliers-purchases}
+\end{figure}
+% =====================================================
+% CONCLUSION
+% =====================================================
+\chapter*{Conclusion}
+\addcontentsline{toc}{chapter}{Conclusion}
+
+Ce projet a permis de concevoir et de réaliser une application web de gestion de magasin, conforme aux objectifs du module Dot Net. Le travail a couvert les étapes essentielles d’un développement logiciel : analyse des besoins, modélisation, implémentation backend, conception de la base de données et réalisation des interfaces.
+
+Sur le plan technique, les apports principaux concernent la structuration d’une application .NET, la manipulation de données persistantes, l’application de validations métier et la mise en place d’une sécurité par authentification et rôles. Sur le plan pédagogique, le projet a renforcé la capacité à travailler en équipe, à organiser le code, à tester les fonctionnalités et à documenter correctement une solution.
+
+L’application repose sur une séparation claire des responsabilités entre les différents rôles métiers (administrateur, responsable achat, magasinier et client), garantissant la sécurité, la cohérence des données et une gestion réaliste du magasin.
+
+Les difficultés rencontrées concernent généralement la gestion de la cohérence du stock, l’alignement entre modèle de données et besoins réels, ainsi que l’harmonisation des interfaces. Ces points ont été progressivement stabilisés grâce à une démarche itérative, des tests réguliers et des corrections ciblées.
+
+% =====================================================
+% PERSPECTIVES
+% =====================================================
+\chapter*{Perspectives}
+\addcontentsline{toc}{chapter}{Perspectives}
+
+Plusieurs améliorations peuvent être envisagées pour étendre la solution :
+\begin{itemize}
+    \item Ajout de \textbf{tableaux de bord} (statistiques de mouvements, produits les plus sortis, alertes).
+    \item Mise en place d’\textbf{alertes de seuil} (rupture imminente, réapprovisionnement).
+    \item Fonction d’\textbf{export} (PDF/Excel/CSV) pour les états de stock et historiques.
+    \item Amélioration de la \textbf{traçabilité} (logs détaillés, audit des modifications).
+    \item Évolution vers une gestion multi-magasin ou multi-emplacement si le besoin apparaît.
+\end{itemize}
+Ces perspectives restent cohérentes avec l’architecture existante et renforcent l’intérêt pédagogique du projet.
+
+% =====================================================
+% REFERENCES / WEBOGRAPHIE
+% =====================================================
+\chapter*{Références / Webographie}
+\addcontentsline{toc}{chapter}{Références / Webographie}
+
+\begin{itemize}
+    \item Microsoft Learn -- Documentation .NET : \url{https://learn.microsoft.com/dotnet/}
+    \item Microsoft Learn -- ASP.NET Core : \url{https://learn.microsoft.com/aspnet/core/}
+    \item Microsoft Learn -- Sécurité (authentification / autorisation) : \url{https://learn.microsoft.com/aspnet/core/security/}
+    \item Microsoft Learn -- Entity Framework Core : \url{https://learn.microsoft.com/ef/core/}
+    \item Documentation SQL Server : \url{https://learn.microsoft.com/sql/}
+    \item OMG UML (référence UML) : \url{https://www.omg.org/uml/}
+\end{itemize}
+
+\end{document}

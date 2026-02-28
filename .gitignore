@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+# Runtime-generated content (user uploads and generated invoices)
+wwwroot/uploads/products/
+wwwroot/invoices/

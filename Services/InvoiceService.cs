@@ -34,7 +34,7 @@ public class InvoiceService
 
         if (vente == null)
         {
-            throw new ArgumentException("Vente non trouvée", nameof(venteId));
+            throw new ArgumentException("Vente non trouvï¿½e", nameof(venteId));
         }
 
         var client = vente.IdClientNavigation;
@@ -72,14 +72,14 @@ public class InvoiceService
 
         // Header
         html.AppendLine("    <div class='header'>");
-        html.AppendLine("        <div class='company-name'>AZZIOUI MAGASIN</div>");
+        html.AppendLine("        <div class='company-name'>MON MAGASIN</div>");
         html.AppendLine("        <div class='invoice-title'>FACTURE</div>");
         html.AppendLine("    </div>");
 
         // Invoice info
         html.AppendLine("    <div class='info-section'>");
         html.AppendLine($"        <div class='info-row'>");
-        html.AppendLine($"            <div><span class='info-label'>Numéro de facture:</span> INV-{vente.IdVente:D6}</div>");
+        html.AppendLine($"            <div><span class='info-label'>Numï¿½ro de facture:</span> INV-{vente.IdVente:D6}</div>");
         html.AppendLine($"            <div><span class='info-label'>Date:</span> {vente.DateVente?.ToString("dd/MM/yyyy") ?? "N/A"}</div>");
         html.AppendLine($"        </div>");
         html.AppendLine($"        <div class='info-row'>");
@@ -88,11 +88,11 @@ public class InvoiceService
         html.AppendLine($"        </div>");
         html.AppendLine($"        <div class='info-row'>");
         html.AppendLine($"            <div><span class='info-label'>Email:</span> {client?.MailClient ?? "N/A"}</div>");
-        html.AppendLine($"            <div><span class='info-label'>Téléphone:</span> {client?.TelClient ?? "N/A"}</div>");
+        html.AppendLine($"            <div><span class='info-label'>Tï¿½lï¿½phone:</span> {client?.TelClient ?? "N/A"}</div>");
         html.AppendLine($"        </div>");
         html.AppendLine($"        <div class='info-row'>");
         html.AppendLine($"            <div><span class='info-label'>Adresse de livraison:</span> {vente.AdresseLiv ?? client?.AdresseClient ?? "N/A"}</div>");
-        html.AppendLine($"            <div><span class='info-label'>Méthode de paiement:</span> {payment?.Methode ?? "N/A"}</div>");
+        html.AppendLine($"            <div><span class='info-label'>Mï¿½thode de paiement:</span> {payment?.Methode ?? "N/A"}</div>");
         html.AppendLine($"        </div>");
         html.AppendLine("    </div>");
 
@@ -100,9 +100,9 @@ public class InvoiceService
         html.AppendLine("    <table>");
         html.AppendLine("        <thead>");
         html.AppendLine("            <tr>");
-        html.AppendLine("                <th>Référence</th>");
+        html.AppendLine("                <th>Rï¿½fï¿½rence</th>");
         html.AppendLine("                <th>Produit</th>");
-        html.AppendLine("                <th>Quantité</th>");
+        html.AppendLine("                <th>Quantitï¿½</th>");
         html.AppendLine("                <th>Prix unitaire</th>");
         html.AppendLine("                <th>Montant</th>");
         html.AppendLine("            </tr>");
@@ -134,7 +134,7 @@ public class InvoiceService
         // Footer
         html.AppendLine("    <div class='footer'>");
         html.AppendLine("        <p>Merci pour votre achat!</p>");
-        html.AppendLine("        <p>AZZIOUI MAGASIN - Votre magasin de confiance</p>");
+        html.AppendLine("        <p>MON MAGASIN - Votre magasin de confiance</p>");
         html.AppendLine("    </div>");
 
         html.AppendLine("    <div class='no-print' style='text-align: center; margin-top: 30px;'>");
@@ -166,7 +166,7 @@ public class InvoiceService
 
         if (vente == null)
         {
-            throw new ArgumentException("Vente non trouvée", nameof(venteId));
+            throw new ArgumentException("Vente non trouvï¿½e", nameof(venteId));
         }
 
         // Generate HTML content
